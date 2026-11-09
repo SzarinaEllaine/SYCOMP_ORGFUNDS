@@ -15,15 +15,45 @@ public final class OrgInfo {
     public static final List<String> VALUES = List.of("Transparency", "Innovation", "Community", "Professionalism");
     public static final String OVERVIEW = "SYCOMP is a student organization under the College of Computer Studies, dedicated to building competent, compassionate, and socially responsible IT professionals.";
 
-    public static final String SY = "SY 2025 – 2026";
+    public static final String SY = "SY 2026–2027";
 
-    /** role, name, year/course */
+    /** Official SYCOMP Administration 2026–2027: position, complete name (36 officers). */
     public static final List<String[]> BOARD = List.of(
-            new String[]{"President", "Juan Dela Cruz", "BSCS 3rd Year"},
-            new String[]{"Vice President", "Maria Santos", "BSCS 3rd Year"},
-            new String[]{"Secretary", "Carlos Reyes", "BSCS 3rd Year"},
-            new String[]{"Treasurer", "Ana Lopez", "BSCS 3rd Year"},
-            new String[]{"Auditor", "Rafael Garcia", "BSCS 3rd Year"});
+            new String[]{"President", "One Marie R. Fortuna"},
+            new String[]{"VP Internal", "Sharee Angela D. Cuevas"},
+            new String[]{"VP External", "Rael Raphael F. Deloso"},
+            new String[]{"Secretary", "Sarah Mae P. Hinayon"},
+            new String[]{"Assistant Secretary", "Samuel A. Tipan"},
+            new String[]{"Internal Liaison Officer", "Crizzabelle M. Alcala"},
+            new String[]{"External Liaison Officer", "Laurence Jay Galon"},
+            new String[]{"Treasurer", "Aleann Venice A. Achacoso"},
+            new String[]{"Assistant Treasurer", "Szarina Ellaine T. Palaca"},
+            new String[]{"Budget Officer", "El Niño Oliver B. Avelino"},
+            new String[]{"Assistant Budget Officer", "Smith Jay S. Castil"},
+            new String[]{"Auditor", "James Benedict Gumapac"},
+            new String[]{"Assistant Auditor", "Roniel S. Minion"},
+            new String[]{"Creative Lead", "Carla Jane Clarabal"},
+            new String[]{"Creative Staff", "Nina Marie A. Medrina"},
+            new String[]{"Creative Staff", "Cris M. Toring"},
+            new String[]{"Creative Staff", "Jacklyn Mae G. Salvo"},
+            new String[]{"Creative Staff", "Princess Danica C. Calamba"},
+            new String[]{"Creative Staff", "Hannavie Mae A. Polinar"},
+            new String[]{"Documentation Officer", "Lawrence D. Caguitla"},
+            new String[]{"Documentation Officer", "Alexes James Cesar"},
+            new String[]{"Technical Director", "Marchus O. Deligero"},
+            new String[]{"Technical Staff", "Osiris Kedigadash Palac"},
+            new String[]{"Technical Staff", "Michael James Melicor"},
+            new String[]{"Technical Staff", "Ralph Symone R. Manlangit"},
+            new String[]{"Public Information Officer", "Karl Niño H. Ranay"},
+            new String[]{"Assistant Public Information Officer", "Lorie Anne L. Ave"},
+            new String[]{"1st Year Representative", "Vanica Kate C. Cagas"},
+            new String[]{"1st Year Representative", "Akuji Gracian S. Afable"},
+            new String[]{"2nd Year Representative", "Mariah Claresse P. Ochea"},
+            new String[]{"2nd Year Representative", "Eldren Nicko Nastor"},
+            new String[]{"3rd Year Representative", "Abby Lauren G. Mante"},
+            new String[]{"3rd Year Representative", "Angel B. Enriquez"},
+            new String[]{"4th Year Representative", "Renato D. Jumang-it"},
+            new String[]{"4th Year Representative", "Alexa Mae Sybille Palgan"});
 
     /** value, label, note */
     public static final List<String[]> STATS = List.of(
@@ -53,7 +83,7 @@ public final class OrgInfo {
             new String[]{"Sunday", "Closed"});
 
     /** Social links. Leave a URL empty to show a "not set" message instead of opening a browser. */
-    public static final String FACEBOOK = "";
+    public static final String FACEBOOK = "https://www.facebook.com/sycomp.hnu.org";
     public static final String X = "";
     public static final String INSTAGRAM = "";
     public static final String YOUTUBE = "";

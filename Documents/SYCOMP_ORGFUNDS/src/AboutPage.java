@@ -28,7 +28,9 @@ public class AboutPage extends Theme.ScrollPanel {
         add(Box.createVerticalStrut(14));
         add(Theme.fixedHeight(buildInfoRow(), 156));
         add(Box.createVerticalStrut(14));
-        add(Theme.fixedHeight(Theme.row(14, new double[]{1.55, 1}, buildBoardCard(), buildStatsCard()), 262));
+        add(buildBoardCard());
+        add(Box.createVerticalStrut(14));
+        add(buildStatsCard());
         add(Box.createVerticalStrut(14));
         add(Theme.fixedHeight(buildAdminCard(), 300));
         add(Box.createVerticalStrut(14));
@@ -73,21 +75,46 @@ public class AboutPage extends Theme.ScrollPanel {
 
     // ------------------------------------------------------------------ board
     private JPanel buildBoardCard() {
-        Theme.Card card = new Theme.Card(new BorderLayout(0, 12));
+        Theme.Card card = new Theme.Card(new BorderLayout(0, 14)) {
+            @Override public Dimension getMaximumSize() { return new Dimension(Integer.MAX_VALUE, getPreferredSize().height); }
+        };
+        card.setAlignmentX(Component.LEFT_ALIGNMENT);
         JPanel top = new JPanel(new BorderLayout());
         top.setOpaque(false);
-        top.add(Theme.cardTitle("people", "Current Executive Board", null), BorderLayout.WEST);
+        top.add(Theme.cardTitle("people", "Current Executive Board", OrgInfo.BOARD.size() + " officers"), BorderLayout.WEST);
         top.add(chip(OrgInfo.SY), BorderLayout.EAST);
         card.add(top, BorderLayout.NORTH);
-        JPanel row = new JPanel(new Theme.RowLayout(10, 1, 1, 1, 1, 1));
-        row.setOpaque(false);
-        for (String[] m : OrgInfo.BOARD) row.add(memberCard(m));
-        card.add(row, BorderLayout.CENTER);
+        card.add(new BoardGrid(), BorderLayout.CENTER);
         return card;
     }
 
+    /** Responsive grid of officer tiles: 2–4 columns depending on the available width. */
+    private class BoardGrid extends JPanel {
+        private static final int TILE_H = 68, GAP = 10;
+        private int lastCols = 3;
+        BoardGrid() {
+            super(null);
+            setOpaque(false);
+            for (String[] m : OrgInfo.BOARD) add(memberCard(m));
+        }
+        private int cols() { return getWidth() <= 0 ? 3 : Math.max(2, Math.min(4, (getWidth() + GAP) / 262)); }
+        private int rows(int cols) { return (getComponentCount() + cols - 1) / cols; }
+        @Override public Dimension getPreferredSize() {
+            int r = rows(cols());
+            return new Dimension(100, r * TILE_H + Math.max(0, r - 1) * GAP);
+        }
+        @Override public Dimension getMinimumSize() { return new Dimension(0, getPreferredSize().height); }
+        @Override public void doLayout() {
+            int cols = cols();
+            int w = (getWidth() - GAP * (cols - 1)) / cols;
+            for (int i = 0; i < getComponentCount(); i++)
+                getComponent(i).setBounds((i % cols) * (w + GAP), (i / cols) * (TILE_H + GAP), w, TILE_H);
+            if (cols != lastCols) { lastCols = cols; SwingUtilities.invokeLater(this::revalidate); }
+        }
+    }
+
     private static JComponent chip(String s) {
-        JLabel l = Theme.label(s, Font.BOLD, 11.5f, Theme.PURPLE_DARK);
+        JLabel l = Theme.label(s, Font.BOLD, 11.5f, Theme.PURPLE_LIGHT);
         l.setBorder(new EmptyBorder(5, 12, 5, 12));
         JPanel p = new JPanel(new BorderLayout()) {
             @Override protected void paintComponent(Graphics g0) {
@@ -106,30 +133,73 @@ public class AboutPage extends Theme.ScrollPanel {
         return w;
     }
 
+    /** Officer tile: avatar, complete name and position only. m = {position, name}. */
     private JComponent memberCard(String[] m) {
         JPanel c = new JPanel() {
+            private final Theme.Anim hoverA = new Theme.Anim(this);
+            {
+                setOpaque(false);
+                addMouseListener(new MouseAdapter() {
+                    @Override public void mouseEntered(MouseEvent e) { hoverA.to(true); }
+                    @Override public void mouseExited(MouseEvent e) { hoverA.to(false); }
+                });
+            }
             @Override protected void paintComponent(Graphics g0) {
                 Graphics2D g = (Graphics2D) g0.create();
                 Theme.antialias(g);
-                Shape s = new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1, getHeight() - 1, 14, 14);
-                g.setColor(new Color(0xFBFAFF));
+                float hv = hoverA.get();
+                RoundRectangle2D s = new RoundRectangle2D.Float(2.5f, 2.5f, getWidth() - 5, getHeight() - 5, 14, 14);
+                Theme.glow(g, s, Theme.PURPLE_LIGHT, hv * 0.5f, 2);
+                g.setColor(Theme.mix(new Color(0x211C39), new Color(0x30264F), hv));
                 g.fill(s);
-                g.setColor(Theme.BORDER);
+                g.setColor(Theme.mix(Theme.BORDER, Theme.PURPLE_LIGHT, hv));
                 g.draw(s);
-                Art.avatar(g, getWidth() / 2.0, 44, 54);
+                int h = getHeight(), tx = 62, tw = getWidth() - tx - 12;
+                Art.avatar(g, 33, h / 2.0, 38);
+                g.setFont(Theme.font(Font.PLAIN, 11.5f));
+                List<String> pos = wrap(g.getFontMetrics(), m[0], tw, 2);
+                int total = 16 * (1 + pos.size()), top = (h - total) / 2;
                 g.setFont(Theme.font(Font.BOLD, 12.5f));
                 g.setColor(Theme.TEXT);
-                center(g, m[0], getWidth(), 98);
-                g.setFont(Theme.font(Font.PLAIN, 12f));
-                center(g, m[1], getWidth(), 118);
-                g.setFont(Theme.font(Font.PLAIN, 11f));
-                g.setColor(Theme.MUTED);
-                center(g, m[2], getWidth(), 138);
+                left(g, m[1], tx, top + 13, tw);
+                g.setFont(Theme.font(Font.PLAIN, 11.5f));
+                g.setColor(Theme.PURPLE);
+                for (int i = 0; i < pos.size(); i++) g.drawString(pos.get(i), tx, top + 13 + 16 * (i + 1));
                 g.dispose();
             }
         };
-        c.setOpaque(false);
         return c;
+    }
+
+    private static void left(Graphics2D g, String s, int x, int y, int w) {
+        FontMetrics fm = g.getFontMetrics();
+        String t = s;
+        while (fm.stringWidth(t) > w && t.length() > 3) t = t.substring(0, t.length() - 2);
+        if (!t.equals(s)) t += "…";
+        g.drawString(t, x, y);
+    }
+
+    /** Word-wraps text into at most maxLines lines of the given pixel width (last line is ellipsised if needed). */
+    private static List<String> wrap(FontMetrics fm, String s, int w, int maxLines) {
+        List<String> lines = new ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+        for (String word : s.split(" ")) {
+            String next = cur.length() == 0 ? word : cur + " " + word;
+            if (fm.stringWidth(next) <= w || cur.length() == 0) cur = new StringBuilder(next);
+            else { lines.add(cur.toString()); cur = new StringBuilder(word); }
+        }
+        if (cur.length() > 0) lines.add(cur.toString());
+        while (lines.size() > maxLines) {
+            int last = lines.size() - 1;
+            lines.set(last - 1, lines.get(last - 1) + " " + lines.remove(last));
+        }
+        for (int i = 0; i < lines.size(); i++) {
+            String t = lines.get(i);
+            while (fm.stringWidth(t) > w && t.length() > 3) t = t.substring(0, t.length() - 2);
+            if (!t.equals(lines.get(i))) t += "…";
+            lines.set(i, t);
+        }
+        return lines;
     }
 
     private static void center(Graphics2D g, String s, int w, int y) {
@@ -141,9 +211,25 @@ public class AboutPage extends Theme.ScrollPanel {
     }
 
     private JPanel buildStatsCard() {
-        Theme.Card card = new Theme.Card(new BorderLayout(0, 10));
+        Theme.Card card = new Theme.Card(new BorderLayout(0, 10)) {
+            @Override public Dimension getMaximumSize() { return new Dimension(Integer.MAX_VALUE, getPreferredSize().height); }
+        };
+        card.setAlignmentX(Component.LEFT_ALIGNMENT);
         card.add(Theme.cardTitle("chart", "Organization Statistics", null), BorderLayout.NORTH);
-        JPanel grid = new JPanel(new GridLayout(2, 2, 10, 10));
+        JPanel grid = new JPanel(null) {
+            private int lastCols = 4;
+            private int cols() { return getWidth() <= 0 ? 4 : getWidth() >= 1040 ? 4 : 2; }
+            @Override public Dimension getPreferredSize() {
+                int rows = cols() == 4 ? 1 : 2;
+                return new Dimension(100, rows * 76 + (rows - 1) * 10);
+            }
+            @Override public void doLayout() {
+                int cols = cols(), n = getComponentCount();
+                int w = (getWidth() - 10 * (cols - 1)) / cols;
+                for (int i = 0; i < n; i++) getComponent(i).setBounds((i % cols) * (w + 10), (i / cols) * 86, w, 76);
+                if (cols != lastCols) { lastCols = cols; SwingUtilities.invokeLater(this::revalidate); }
+            }
+        };
         grid.setOpaque(false);
         String[] icons = {"people", "calendar", "trophy", "star"};
         for (int i = 0; i < OrgInfo.STATS.size(); i++) {
@@ -153,7 +239,7 @@ public class AboutPage extends Theme.ScrollPanel {
                     Graphics2D g = (Graphics2D) g0.create();
                     Theme.antialias(g);
                     Shape sh = new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1, getHeight() - 1, 12, 12);
-                    g.setColor(new Color(0xFBFAFF));
+                    g.setColor(new Color(0x211C39));
                     g.fill(sh);
                     g.setColor(Theme.BORDER);
                     g.draw(sh);
@@ -249,11 +335,11 @@ public class AboutPage extends Theme.ScrollPanel {
                 Graphics2D g = (Graphics2D) g0.create();
                 Theme.antialias(g);
                 Shape sh = new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1, getHeight() - 1, 12, 12);
-                g.setColor(Color.WHITE);
+                g.setColor(new Color(0x30264F));
                 g.fill(sh);
                 g.setColor(Theme.BORDER);
                 g.draw(sh);
-                g.setColor(new Color(0xF0ECFF));
+                g.setColor(new Color(0x40336A));
                 g.fill(new RoundRectangle2D.Float(1, 1, getWidth() - 2, 38, 11, 11));
                 g.fillRect(1, 20, getWidth() - 2, 19);
                 g.dispose();
@@ -272,7 +358,7 @@ public class AboutPage extends Theme.ScrollPanel {
         for (int i = 0; i < 5; i++) {
             JPanel r = new JPanel(new BorderLayout(6, 0));
             r.setOpaque(false);
-            r.setBorder(new MatteBorder(0, 0, i < 4 ? 1 : 0, 0, new Color(0xF0EDFA)));
+            r.setBorder(new MatteBorder(0, 0, i < 4 ? 1 : 0, 0, Theme.BORDER));
             r.add(Theme.label(OrgInfo.ROLES[i], Font.BOLD, 11.5f, Theme.TEXT), BorderLayout.WEST);
             JLabel n = Theme.label(a[i + 1], Font.PLAIN, 11.5f, Theme.MUTED);
             n.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -338,22 +424,29 @@ public class AboutPage extends Theme.ScrollPanel {
     private static class ArrowBtn extends JComponent {
         private final String icon;
         private boolean on = true;
+        private final Theme.Anim hoverA = new Theme.Anim(this);
         ArrowBtn(String icon, Runnable action) {
             this.icon = icon;
             setPreferredSize(new Dimension(30, 30));
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            addMouseListener(new MouseAdapter() { @Override public void mouseClicked(MouseEvent e) { if (on) action.run(); } });
+            addMouseListener(new MouseAdapter() {
+                @Override public void mouseClicked(MouseEvent e) { if (on) action.run(); }
+                @Override public void mouseEntered(MouseEvent e) { hoverA.to(true); }
+                @Override public void mouseExited(MouseEvent e) { hoverA.to(false); }
+            });
         }
         void setEnabledState(boolean b) { on = b; repaint(); }
         @Override protected void paintComponent(Graphics g0) {
             Graphics2D g = (Graphics2D) g0.create();
             Theme.antialias(g);
-            Shape s = new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1, getHeight() - 1, 8, 8);
-            g.setColor(Color.WHITE);
+            float h = on ? hoverA.get() : 0f;
+            RoundRectangle2D s = new RoundRectangle2D.Float(1.5f, 1.5f, getWidth() - 3, getHeight() - 3, 8, 8);
+            Theme.glow(g, s, Theme.PURPLE_LIGHT, h * 0.55f, 2);
+            g.setColor(Theme.mix(new Color(0x211C39), Theme.LAVENDER, h));
             g.fill(s);
-            g.setColor(Theme.BORDER);
+            g.setColor(Theme.mix(Theme.BORDER, Theme.PURPLE_LIGHT, h));
             g.draw(s);
-            Icons.paint(g, icon, 8, 8, 14, on ? Theme.PURPLE_DARK : new Color(0xC4BFDD));
+            Icons.paint(g, icon, 8, 8, 14, on ? Theme.PURPLE_LIGHT : Theme.MUTED);
             g.dispose();
         }
     }

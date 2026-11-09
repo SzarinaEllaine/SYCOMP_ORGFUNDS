@@ -69,12 +69,17 @@ public final class Art {
         if (loadLogo() == null) { drawnLogo(g0, cx, cy, size); return; }   // no logo.png found
         Graphics2D g = (Graphics2D) g0.create();
         Theme.antialias(g);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        // Render at the screen's real pixel size (HiDPI-aware) so the logo is never up- or down-scaled again by Swing.
+        double scale = Math.max(1.0, Math.max(g.getTransform().getScaleX(), g.getTransform().getScaleY()));
         int d = Math.max(8, (int) Math.round(size));
-        int x = (int) Math.round(cx - d / 2.0), y = (int) Math.round(cy - d / 2.0);
+        int px = Math.min(loadLogo().getWidth(), Math.max(8, (int) Math.round(size * scale)));
+        double x = cx - d / 2.0, y = cy - d / 2.0;
         // soft glow so the dark disc separates from dark backgrounds
-        g.setColor(new Color(150, 110, 255, 60));
-        g.fill(new Ellipse2D.Double(x - 2, y - 2, d + 4, d + 4));
-        g.drawImage(scaledLogo(d), x, y, null);
+        AffineTransform at = AffineTransform.getTranslateInstance(x, y);
+        at.scale(d / (double) px, d / (double) px);
+        g.drawImage(scaledLogo(px), at, null);
         g.dispose();
     }
 
@@ -290,29 +295,20 @@ public final class Art {
             int w = getWidth(), h = getHeight();
             Shape clip = new RoundRectangle2D.Float(0, 0, w, h - 3, 18, 18);
             g.clip(clip);
-            g.setPaint(new GradientPaint(0, 0, new Color(0x120B3A), w, h, new Color(0x4B2FC4)));
+            g.setPaint(new GradientPaint(0, 0, Theme.PURPLE_DARK, w, 0, Theme.PURPLE));
             g.fillRect(0, 0, w, h);
-            circuits(g, w * 0.35, 0, w * 0.65, h, 21, 60, new Color(170, 140, 255));
 
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.30f));
             switch (kind) {
                 case "about" -> {
                     building(g, w - 520, 0, 520, h);
-                    g.setPaint(new GradientPaint(w - 520, 0, new Color(0x120B3A), w - 200, 0, new Color(18, 11, 58, 0)));
-                    g.fillRect(w - 520, 0, 520, h);
                 }
-                case "contact" -> {
-                    g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.38f));
-                    laptop(g, w - 470, 8, 440);
-                    g.setComposite(AlphaComposite.SrcOver);
-                    g.setPaint(new GradientPaint(w - 560, 0, new Color(0x120B3A), w - 240, 0, new Color(18, 11, 58, 0)));
-                    g.fillRect(w - 560, 0, 560, h);
-                }
+                case "contact" -> laptop(g, w - 470, 8, 440);
                 default -> {
                     laptop(g, w - 470, 4, 440);
-                    g.setPaint(new GradientPaint(w - 640, 0, new Color(0x1A0F52), w - 330, 0, new Color(26, 15, 82, 0)));
-                    g.fillRect(w - 640, 0, 640, h);
                 }
             }
+            g.setComposite(AlphaComposite.SrcOver);
 
             double logoSize = Math.min(120, h - 36);
             logo(g, 28 + logoSize / 2 + 8, h / 2.0 - 2, logoSize);

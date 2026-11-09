@@ -55,10 +55,12 @@ public class DashboardFrame extends JFrame {
 
         topBar = new TopBar();
         JPanel right = new JPanel(new BorderLayout());
+        right.setBackground(Theme.BG);
         right.add(topBar, BorderLayout.NORTH);
         right.add(content, BorderLayout.CENTER);
 
         JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(Theme.BG);
         root.add(new Sidebar(), BorderLayout.WEST);
         root.add(right, BorderLayout.CENTER);
         setContentPane(root);
@@ -117,18 +119,17 @@ public class DashboardFrame extends JFrame {
             addNav(list, ABOUT, "About the Organization", "people");
             addNav(list, CONTACT, "Contact Us", "mail");
             JComponent brand = new JComponent() {
-                { setPreferredSize(new Dimension(270, 118)); }
+                { setPreferredSize(new Dimension(270, 104)); }
                 @Override protected void paintComponent(Graphics g0) {
                     Graphics2D g = (Graphics2D) g0.create();
                     Theme.antialias(g);
-                    Art.logo(g, 58, 62, 80);
-                    g.setColor(Color.WHITE);
-                    g.setFont(Theme.font(Font.BOLD, 25f));
-                    g.drawString("SYCOMP", 110, 56);
+                    Art.logo(g, 52, 52, 52);
+                    g.setColor(Theme.TEXT);
+                    g.setFont(Theme.font(Font.BOLD, 20f));
+                    g.drawString("SYCOMP", 90, 49);
                     g.setFont(Theme.font(Font.PLAIN, 11.5f));
-                    g.setColor(new Color(0xD8CFFA));
-                    g.drawString("Financial Management", 110, 74);
-                    g.drawString("System", 110, 89);
+                    g.setColor(Theme.MUTED);
+                    g.drawString("Financial Management System", 90, 67);
                     g.dispose();
                 }
             };
@@ -140,59 +141,73 @@ public class DashboardFrame extends JFrame {
             NavItem n = new NavItem(key, text, icon);
             nav.put(key, n);
             list.add(n);
-            list.add(Box.createVerticalStrut(6));
+            list.add(Box.createVerticalStrut(4));
         }
 
         @Override protected void paintComponent(Graphics g0) {
             Graphics2D g = (Graphics2D) g0.create();
-            Art.sidebarBackground(g, getWidth(), getHeight());
-            g.setColor(new Color(0xA68BFF));
-            g.setFont(Theme.font(Font.BOLD, 17f));
-            int y = getHeight() - 175;
-            g.drawString("Empowering", 30, y);
-            g.drawString("Future Tech Leaders", 30, y + 23);
-            g.setFont(Theme.font(Font.PLAIN, 13f));
-            g.setColor(new Color(0xD8CFFA));
-            g.drawString("Through Knowledge,", 30, y + 50);
-            g.drawString("Community, and Innovation.", 30, y + 69);
+            Theme.antialias(g);
+            g.setPaint(new GradientPaint(0, 0, Theme.SIDEBAR_TOP, 0, getHeight(), Theme.SIDEBAR_BOTTOM));
+            g.fillRect(0, 0, getWidth(), getHeight());
+            g.setColor(Theme.BORDER);
+            g.fillRect(getWidth() - 1, 0, 1, getHeight());
+            // footer note
+            int y = getHeight() - 78;
+            g.setColor(Theme.SOFT);
+            g.fill(new RoundRectangle2D.Float(16, y - 8, getWidth() - 33, 62, 14, 14));
+            g.setColor(Theme.PURPLE);
+            g.setFont(Theme.font(Font.BOLD, 12.5f));
+            g.drawString("Empowering Future Tech Leaders", 30, y + 14);
+            g.setFont(Theme.font(Font.PLAIN, 11.5f));
+            g.setColor(Theme.MUTED);
+            g.drawString("Knowledge, Community, Innovation", 30, y + 34);
             g.dispose();
         }
     }
 
     private class NavItem extends JComponent {
         private final String key, text, icon;
-        private boolean hover;
+        private final Theme.Anim hoverA = new Theme.Anim(this);
         NavItem(String key, String text, String icon) {
             this.key = key; this.text = text; this.icon = icon;
-            setPreferredSize(new Dimension(100, 52));
-            setMaximumSize(new Dimension(Integer.MAX_VALUE, 52));
+            setPreferredSize(new Dimension(100, 48));
+            setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
             setAlignmentX(LEFT_ALIGNMENT);
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             addMouseListener(new MouseAdapter() {
-                @Override public void mouseEntered(MouseEvent e) { hover = true; repaint(); }
-                @Override public void mouseExited(MouseEvent e) { hover = false; repaint(); }
+                @Override public void mouseEntered(MouseEvent e) { hoverA.to(true); }
+                @Override public void mouseExited(MouseEvent e) { hoverA.to(false); }
                 @Override public void mouseClicked(MouseEvent e) { showPage(key); }
             });
+        }
+        @Override public javax.accessibility.AccessibleContext getAccessibleContext() {
+            if (accessibleContext == null) accessibleContext = new AccessibleJComponent() {
+                @Override public String getAccessibleName() { return text; }
+                @Override public javax.accessibility.AccessibleRole getAccessibleRole() { return javax.accessibility.AccessibleRole.PUSH_BUTTON; }
+            };
+            return accessibleContext;
         }
         @Override protected void paintComponent(Graphics g0) {
             Graphics2D g = (Graphics2D) g0.create();
             Theme.antialias(g);
             boolean active = key.equals(current);
-            RoundRectangle2D shape = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight() - 1, 14, 14);
+            float h = hoverA.get();
+            RoundRectangle2D shape = new RoundRectangle2D.Float(0, 2, getWidth(), getHeight() - 4, 12, 12);
             if (active) {
-                g.setPaint(new GradientPaint(0, 0, new Color(0x4A2FC9), getWidth(), 0, new Color(0x7B57F2)));
+                g.setColor(Theme.LAVENDER);
                 g.fill(shape);
-                g.setColor(new Color(0xB59CFF));
-                g.fill(new RoundRectangle2D.Float(0, 12, 4, getHeight() - 25, 4, 4));
-            } else if (hover) {
-                g.setColor(new Color(255, 255, 255, 18));
+                g.setColor(Theme.PURPLE);
+                g.fill(new RoundRectangle2D.Float(0, 13, 3.5f, getHeight() - 26, 3, 3));
+            } else if (h > 0.01f) {
+                g.setColor(Theme.mix(Theme.SIDEBAR_BOTTOM, new Color(0x30264F), h));
                 g.fill(shape);
             }
-            Icons.paint(g, icon, 18, (getHeight() - 24) / 2.0, 24, Color.WHITE);
-            g.setFont(Theme.font(active ? Font.BOLD : Font.PLAIN, 15f));
-            g.setColor(Color.WHITE);
+            Color fg = active ? Theme.PURPLE_LIGHT : Theme.mix(Theme.MUTED, Theme.TEXT, h);
+            Icons.paint(g, icon, 18, (getHeight() - 22) / 2.0, 22, fg);
+            g.setFont(Theme.font(active ? Font.BOLD : Font.PLAIN, 14f));
+            g.setColor(fg);
             FontMetrics fm = g.getFontMetrics();
-            g.drawString(text, 58, (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
+            g.drawString(text, 54, (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
             g.dispose();
         }
     }
@@ -205,14 +220,14 @@ public class DashboardFrame extends JFrame {
 
         TopBar() {
             super(new BorderLayout());
-            setBackground(Color.WHITE);
+            setBackground(new Color(0x100D24));
             setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, Theme.BORDER), new EmptyBorder(0, 28, 0, 24)));
             setPreferredSize(new Dimension(100, 74));
 
             title.setOpaque(false);
             title.setLayout(new BoxLayout(title, BoxLayout.Y_AXIS));
             title.add(Box.createVerticalGlue());
-            title.add(Theme.label("SYCOMP", Font.BOLD, 22f, Theme.PURPLE_DARK));
+            title.add(Theme.label("SYCOMP", Font.BOLD, 22f, Theme.PURPLE_LIGHT));
             title.add(Theme.label("Financial Management System", Font.PLAIN, 13.5f, Theme.TEXT));
             title.add(Box.createVerticalGlue());
             add(title, BorderLayout.WEST);
@@ -235,13 +250,25 @@ public class DashboardFrame extends JFrame {
 
         private JComponent bell() {
             JComponent b = new JComponent() {
-                { setPreferredSize(new Dimension(40, 42)); setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); }
+                private final Theme.Anim hoverA = new Theme.Anim(this);
+                {
+                    setPreferredSize(new Dimension(40, 42)); setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    addMouseListener(new MouseAdapter() {
+                        @Override public void mouseEntered(MouseEvent e) { hoverA.to(true); }
+                        @Override public void mouseExited(MouseEvent e) { hoverA.to(false); }
+                    });
+                }
                 @Override protected void paintComponent(Graphics g0) {
                     Graphics2D g = (Graphics2D) g0.create();
                     Theme.antialias(g);
-                    Icons.paint(g, "bell", 8, 9, 24, Theme.TEXT);
+                    float h = hoverA.get();
+                    Ellipse2D halo = new Ellipse2D.Double(4, 5, 32, 32);
+                    Theme.glow(g, halo, Theme.PURPLE_LIGHT, h * 0.6f, 2);
+                    g.setColor(Theme.mix(new Color(0x100D24), Theme.LAVENDER, h));
+                    g.fill(halo);
+                    Icons.paint(g, "bell", 8, 9, 24, Theme.mix(Theme.TEXT, Theme.PURPLE, h));
                     if (unread && manager.getCount() > 0) {
-                        g.setColor(Color.WHITE);
+                        g.setColor(new Color(0x18142C));
                         g.fill(new Ellipse2D.Double(24, 5, 11, 11));
                         g.setColor(new Color(0xFF4D6D));
                         g.fill(new Ellipse2D.Double(25.5, 6.5, 8, 8));
@@ -259,7 +286,7 @@ public class DashboardFrame extends JFrame {
             JPopupMenu m = new JPopupMenu();
             m.setBorder(new LineBorder(Theme.BORDER));
             JPanel p = new JPanel();
-            p.setBackground(Color.WHITE);
+            p.setBackground(new Color(0x18142C));
             p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
             p.setBorder(new EmptyBorder(12, 14, 12, 14));
             p.add(Theme.label("Recent activity", Font.BOLD, 14f, Theme.TEXT));
@@ -281,12 +308,21 @@ public class DashboardFrame extends JFrame {
 
         private JComponent userChip() {
             JComponent c = new JComponent() {
-                { setPreferredSize(new Dimension(150, 44)); setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); }
+                private final Theme.Anim hoverA = new Theme.Anim(this);
+                {
+                    setPreferredSize(new Dimension(150, 44)); setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    addMouseListener(new MouseAdapter() {
+                        @Override public void mouseEntered(MouseEvent e) { hoverA.to(true); }
+                        @Override public void mouseExited(MouseEvent e) { hoverA.to(false); }
+                    });
+                }
                 @Override protected void paintComponent(Graphics g0) {
                     Graphics2D g = (Graphics2D) g0.create();
                     Theme.antialias(g);
+                    Ellipse2D av = new Ellipse2D.Double(0, 2, 40, 40);
+                    Theme.glow(g, av, Theme.PURPLE_LIGHT, hoverA.get() * 0.9f, 2);
                     g.setPaint(new GradientPaint(0, 0, Theme.PURPLE_LIGHT, 40, 40, Theme.PURPLE_DARK));
-                    g.fill(new Ellipse2D.Double(0, 2, 40, 40));
+                    g.fill(av);
                     Icons.paint(g, "user", 9, 11, 22, Color.WHITE);
                     g.setFont(Theme.font(Font.BOLD, 13.5f));
                     g.setColor(Theme.TEXT);
@@ -331,8 +367,9 @@ public class DashboardFrame extends JFrame {
         @Override protected void paintComponent(Graphics g0) {
             Graphics2D g = (Graphics2D) g0.create();
             Theme.antialias(g);
-            Shape s = new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1, getHeight() - 1, getHeight(), getHeight());
-            g.setColor(Color.WHITE);
+            RoundRectangle2D s = new RoundRectangle2D.Float(2.5f, 2.5f, getWidth() - 5, getHeight() - 5, getHeight(), getHeight());
+            if (hasFocus()) Theme.glow(g, s, Theme.PURPLE_LIGHT, 0.9f, 2);
+            g.setColor(new Color(0x1B172F));
             g.fill(s);
             g.setColor(hasFocus() ? Theme.PURPLE_LIGHT : Theme.BORDER);
             g.setStroke(new BasicStroke(1.4f));
@@ -340,7 +377,7 @@ public class DashboardFrame extends JFrame {
             Icons.paint(g, "search", 15, (getHeight() - 19) / 2.0, 19, Theme.PURPLE);
             if (getText().isEmpty()) {
                 g.setFont(getFont());
-                g.setColor(new Color(0x9A96B5));
+                g.setColor(Theme.MUTED);
                 g.drawString("Search reports or activities...", 42, (getHeight() + g.getFontMetrics().getAscent() - g.getFontMetrics().getDescent()) / 2);
             }
             g.dispose();

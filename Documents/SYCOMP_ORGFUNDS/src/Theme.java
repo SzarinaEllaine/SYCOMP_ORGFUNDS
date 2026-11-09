@@ -17,31 +17,89 @@ import java.util.Set;
 public final class Theme {
     private Theme() {}
 
-    public static final Color SIDEBAR_TOP = new Color(0x0B0928);
-    public static final Color SIDEBAR_BOTTOM = new Color(0x1A0F48);
-    public static final Color PURPLE = new Color(0x5B3FD6);
-    public static final Color PURPLE_DARK = new Color(0x3B25A8);
-    public static final Color PURPLE_LIGHT = new Color(0x9B7BEA);
-    public static final Color LAVENDER = new Color(0xEFEBFD);
-    public static final Color BG = new Color(0xF8F7FE);
-    public static final Color TEXT = new Color(0x14123A);
-    public static final Color MUTED = new Color(0x6E6A8C);
-    public static final Color BORDER = new Color(0xE3DFF5);
-    public static final Color GREEN = new Color(0x16A34A);
-    public static final Color RED = new Color(0xE5484D);
-    public static final Color BLUE = new Color(0x3B82F6);
+    // ---- design tokens: SYCOMP violet system ----
+    public static final Color SIDEBAR_TOP = new Color(0x100D24);
+    public static final Color SIDEBAR_BOTTOM = new Color(0x15112B);
+    public static final Color PURPLE = new Color(0x9B7BFF);
+    public static final Color PURPLE_DARK = new Color(0x5135B8);
+    public static final Color PURPLE_LIGHT = new Color(0xB49CFF);
+    public static final Color LAVENDER = new Color(0x30264F);
+    public static final Color SOFT = new Color(0x1B172F);
+    public static final Color BG = new Color(0x0C0A18);
+    public static final Color TEXT = new Color(0xF4F1FF);
+    public static final Color MUTED = new Color(0xAAA4C4);
+    public static final Color BORDER = new Color(0x332D4D);
+    public static final Color GREEN = new Color(0x4BD39A);
+    public static final Color WARNING = new Color(0xF4BC62);
+    public static final Color RED = new Color(0xFF758A);
+    public static final Color BLUE = new Color(0x78A9FF);
+    public static final Color CYAN = new Color(0x22D3EE);
 
-    private static final String FAMILY = pickFamily();
+    private static final String FAMILY = pickFamily(new String[]{"Inter", "Plus Jakarta Sans", "Segoe UI Variable Text", "Segoe UI", "SF Pro Text", "Helvetica Neue", "Noto Sans", "DejaVu Sans"});
+    /** Headings use Plus Jakarta Sans when available, otherwise the body family. */
+    private static final String HEADING_FAMILY = pickFamily(new String[]{"Plus Jakarta Sans", "Inter", "Segoe UI", "SF Pro Display", "Helvetica Neue", "Noto Sans", "DejaVu Sans"});
 
-    private static String pickFamily() {
-        Set<String> have = new HashSet<>(Arrays.asList(
-                GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
-        for (String f : new String[]{"Segoe UI", "SF Pro Text", "Helvetica Neue", "Inter", "Noto Sans", "DejaVu Sans"})
-            if (have.contains(f)) return f;
+    /**
+     * Drop Inter / Plus Jakarta Sans .ttf files in a "fonts" folder next to the app (or in src/fonts) and they
+     * are registered automatically; otherwise the first installed family from the preference list is used.
+     */
+    private static String pickFamily(String[] prefs) {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        for (String dir : new String[]{"fonts", "src/fonts", "../fonts"}) {
+            java.io.File[] files = new java.io.File(dir).listFiles((d, n) -> n.toLowerCase().endsWith(".ttf") || n.toLowerCase().endsWith(".otf"));
+            if (files == null) continue;
+            for (java.io.File f : files) {
+                try { ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, f)); } catch (Exception ignored) {}
+            }
+        }
+        Set<String> have = new HashSet<>(Arrays.asList(ge.getAvailableFontFamilyNames()));
+        for (String f : prefs) if (have.contains(f)) return f;
         return Font.SANS_SERIF;
     }
 
-    public static Font font(int style, float size) { return new Font(FAMILY, style, 12).deriveFont(style, size); }
+    // --------------------------------------------------------------- animation
+    /** Smoothly eases a 0..1 value toward a target and repaints its component on every step. */
+    public static class Anim {
+        private final JComponent comp;
+        private final javax.swing.Timer timer;
+        private float value, target;
+        public Anim(JComponent comp) {
+            this.comp = comp;
+            this.timer = new javax.swing.Timer(15, e -> {
+                float d = target - value;
+                if (Math.abs(d) < 0.02f) { value = target; ((javax.swing.Timer) e.getSource()).stop(); }
+                else value += d * 0.28f;
+                comp.repaint();
+            });
+        }
+        public void to(boolean on) { target = on ? 1f : 0f; if (!timer.isRunning()) timer.start(); }
+        /** Eased progress, 0..1. */
+        public float get() { return value * value * (3 - 2 * value); }
+    }
+
+    /** Soft coloured halo drawn just outside a rounded shape (used for hover / pressed / focus glow). */
+    public static void glow(Graphics2D g, RectangularShape s, Color c, float strength, int radius) {
+        if (strength <= 0.01f) return;
+        for (int i = radius; i >= 1; i--) {
+            float t = 1f - (i - 1f) / radius;
+            int a = Math.min(255, Math.round(strength * 20 * t * t));
+            g.setColor(alpha(c, a));
+            g.setStroke(new BasicStroke(i * 2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g.draw(s);
+        }
+    }
+
+    public static Color mix(Color a, Color b, float t) {
+        return new Color(Math.round(a.getRed() + (b.getRed() - a.getRed()) * t),
+                Math.round(a.getGreen() + (b.getGreen() - a.getGreen()) * t),
+                Math.round(a.getBlue() + (b.getBlue() - a.getBlue()) * t));
+    }
+
+    /** Type scale: bold text of 15pt and above is a heading (heading family); everything else is body text. */
+    public static Font font(int style, float size) {
+        String fam = (style & Font.BOLD) != 0 && size >= 15f ? HEADING_FAMILY : FAMILY;
+        return new Font(fam, style, 12).deriveFont(style, size);
+    }
 
     private static final DecimalFormat PESO = new DecimalFormat("₱#,##0.00");
     public static String peso(BigDecimal v) { return PESO.format(v); }
@@ -124,28 +182,38 @@ public final class Theme {
     }
 
     // -------------------------------------------------------------------- card
-    /** White rounded panel with a hairline border and soft shadow; optional two-colour tint. */
+    /** Rounded glass-style panel with a hairline border and soft shadow; optional two-colour tint. */
     public static class Card extends JPanel {
         private Color tintA, tintB;
+        private final Anim hover = new Anim(this);
         public Card(LayoutManager lm) {
             super(lm);
             setOpaque(false);
             setBorder(new EmptyBorder(16, 18, 20, 18));
+            addMouseListener(new MouseAdapter() {
+                @Override public void mouseEntered(MouseEvent e) { hover.to(true); }
+                @Override public void mouseExited(MouseEvent e) { hover.to(false); }
+            });
         }
         public Card tint(Color a, Color b) { tintA = a; tintB = b; return this; }
         @Override protected void paintComponent(Graphics g0) {
             Graphics2D g = (Graphics2D) g0.create();
             antialias(g);
             int w = getWidth() - 2, h = getHeight() - 5;
-            for (int i = 3; i >= 1; i--) {
-                g.setColor(new Color(60, 37, 168, 6));
-                g.fill(new RoundRectangle2D.Float(1 - i * 0.5f, 2 + i * 0.5f, w + i, h + i * 0.4f, 18 + i, 18 + i));
+            float progress = hover.get();
+            for (int i = 5; i >= 1; i--) {
+                g.setColor(new Color(104, 76, 214, Math.round(4 + progress * 2)));
+                g.fill(new RoundRectangle2D.Float(1 - i * 0.6f, 2 + i * 0.6f, w + i * 1.2f, h + i * 0.5f, 18 + i, 18 + i));
             }
             Shape s = new RoundRectangle2D.Float(0.5f, 0.5f, w, h, 16, 16);
-            g.setPaint(tintA == null ? Color.WHITE : new GradientPaint(0, 0, tintA, getWidth(), getHeight(), tintB));
+            g.setPaint(tintA == null
+                    ? new GradientPaint(0, 0, mix(new Color(0x211C39), new Color(0x292244), progress), 0, getHeight(), new Color(0x17142A))
+                    : new GradientPaint(0, 0, tintA, getWidth(), getHeight(), tintB));
             g.fill(s);
-            g.setColor(BORDER);
+            g.setColor(mix(BORDER, new Color(0x65549B), progress * 0.55f));
             g.draw(s);
+            g.setColor(new Color(255, 255, 255, Math.round(14 + progress * 12)));
+            g.draw(new RoundRectangle2D.Float(1.5f, 1.5f, w - 2, Math.max(12, getHeight() * 0.35f), 15, 15));
             g.dispose();
             super.paintComponent(g0);
         }
@@ -157,7 +225,7 @@ public final class Theme {
     public static class RoundButton extends JButton {
         private final Color base;
         private final Style style;
-        private boolean hover;
+        private final Anim hoverA = new Anim(this), pressA = new Anim(this);
 
         public RoundButton(String text, Color base, boolean outline) { this(text, base, outline ? Style.OUTLINE : Style.FILLED); }
 
@@ -173,10 +241,17 @@ public final class Theme {
             setOpaque(false);
             setIconTextGap(8);
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            // the outer 3px of the button are reserved for the glow halo
             setBorder(new EmptyBorder(10, 20, 10, 20));
             addMouseListener(new MouseAdapter() {
-                @Override public void mouseEntered(MouseEvent e) { hover = true; repaint(); }
-                @Override public void mouseExited(MouseEvent e) { hover = false; repaint(); }
+                @Override public void mouseEntered(MouseEvent e) { hoverA.to(true); }
+                @Override public void mouseExited(MouseEvent e) { hoverA.to(false); pressA.to(false); }
+                @Override public void mousePressed(MouseEvent e) { pressA.to(true); }
+                @Override public void mouseReleased(MouseEvent e) { pressA.to(false); }
+            });
+            addFocusListener(new FocusAdapter() {
+                @Override public void focusGained(FocusEvent e) { repaint(); }
+                @Override public void focusLost(FocusEvent e) { repaint(); }
             });
         }
 
@@ -188,24 +263,28 @@ public final class Theme {
         @Override protected void paintComponent(Graphics g0) {
             Graphics2D g = (Graphics2D) g0.create();
             antialias(g);
-            RoundRectangle2D shape = new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1, getHeight() - 1, 12, 12);
+            float h = hoverA.get(), p = pressA.get();
+            RoundRectangle2D shape = new RoundRectangle2D.Float(3f, 3f, getWidth() - 7, getHeight() - 7, 12, 12);
+            float glowAmt = Math.min(1f, h * 0.55f + p * 0.9f + (hasFocus() ? 0.5f : 0f));
+            if (isEnabled()) glow(g, shape, style == Style.ON_DARK ? PURPLE_LIGHT : mix(base, PURPLE_LIGHT, 0.35f), glowAmt, 3);
             switch (style) {
                 case FILLED -> {
-                    g.setPaint(!isEnabled() ? new Color(0xC9C4E3)
-                            : new GradientPaint(0, 0, hover ? PURPLE.darker() : base, 0, getHeight(), hover ? PURPLE_DARK : base.darker()));
+                    // flat fill: hover and press only deepen the colour
+                    Color c = mix(base, PURPLE_DARK, 0.16f * h + 0.22f * p);
+                    g.setColor(!isEnabled() ? new Color(0xCFC9EC) : c);
                     g.fill(shape);
                 }
                 case OUTLINE -> {
-                    g.setColor(hover ? alpha(base, 24) : Color.WHITE);
+                    g.setColor(mix(SOFT, mix(SOFT, base, 0.28f), Math.min(1f, h + p * 0.5f)));
                     g.fill(shape);
-                    g.setColor(alpha(base, 150));
+                    g.setColor(alpha(base, Math.round(130 + 100 * h)));
                     g.setStroke(new BasicStroke(1.3f));
                     g.draw(shape);
                 }
                 case ON_DARK -> {
-                    g.setColor(new Color(255, 255, 255, hover ? 60 : 30));
+                    g.setColor(new Color(255, 255, 255, Math.round(26 + 44 * h + 30 * p)));
                     g.fill(shape);
-                    g.setColor(new Color(255, 255, 255, 190));
+                    g.setColor(new Color(255, 255, 255, Math.round(150 + 80 * h)));
                     g.setStroke(new BasicStroke(1.4f));
                     g.draw(shape);
                 }
@@ -275,15 +354,22 @@ public final class Theme {
     public static void styleField(JComponent c) {
         c.setFont(font(Font.PLAIN, 13.5f));
         c.setForeground(TEXT);
-        c.setBackground(Color.WHITE);
-        c.setBorder(new CompoundBorder(new LineBorder(BORDER, 1, true), new EmptyBorder(7, 11, 7, 11)));
+        c.setBackground(new Color(0x1A1730));
+        Border idle = new CompoundBorder(new LineBorder(BORDER, 1, true), new EmptyBorder(7, 11, 7, 11));
+        Border focus = new CompoundBorder(new CompoundBorder(new LineBorder(alpha(PURPLE_LIGHT, 90), 1, true), new LineBorder(PURPLE, 1, true)),
+                new EmptyBorder(6, 10, 6, 10));
+        c.setBorder(idle);
+        c.addFocusListener(new FocusAdapter() {
+            @Override public void focusGained(FocusEvent e) { c.setBorder(focus); }
+            @Override public void focusLost(FocusEvent e) { c.setBorder(idle); }
+        });
         c.setPreferredSize(new Dimension(100, 38));
         if (c instanceof JTextComponent tc) tc.setCaretColor(PURPLE);
     }
 
     public static void styleCombo(JComboBox<?> c) {
         c.setFont(font(Font.PLAIN, 13.5f));
-        c.setBackground(Color.WHITE);
+        c.setBackground(new Color(0x1A1730));
         c.setForeground(TEXT);
         c.setOpaque(true);
         c.setUI(new BasicComboBoxUI() {
@@ -292,7 +378,7 @@ public final class Theme {
                     @Override public void paint(Graphics g0) {
                         Graphics2D g = (Graphics2D) g0.create();
                         antialias(g);
-                        g.setColor(Color.WHITE);
+                        g.setColor(new Color(0x1A1730));
                         g.fillRect(0, 0, getWidth(), getHeight());
                         Icons.paint(g, "chevDown", getWidth() / 2.0 - 6, getHeight() / 2.0 - 6, 12, MUTED);
                         g.dispose();
@@ -305,7 +391,7 @@ public final class Theme {
                 return b;
             }
             @Override public void paintCurrentValueBackground(Graphics g, Rectangle bounds, boolean hasFocus) {
-                g.setColor(Color.WHITE);
+                g.setColor(new Color(0x1A1730));
                 g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
             }
         });
@@ -317,7 +403,7 @@ public final class Theme {
                 lb.setBorder(new EmptyBorder(7, 10, 7, 10));
                 lb.setFont(font(Font.PLAIN, 13.5f));
                 lb.setForeground(TEXT);
-                lb.setBackground(i >= 0 && sel ? LAVENDER : Color.WHITE);
+                lb.setBackground(i >= 0 && sel ? LAVENDER : new Color(0x1A1730));
                 return lb;
             }
         });
@@ -339,7 +425,7 @@ public final class Theme {
             if (icon != null) Icons.paint(g, icon, 11, (getHeight() - 16) / 2.0, 16, PURPLE);
             if (getText().isEmpty()) {
                 g.setFont(getFont());
-                g.setColor(new Color(0xA19DBA));
+                g.setColor(MUTED);
                 Insets in = getInsets();
                 g.drawString(hint, in.left, (getHeight() + g.getFontMetrics().getAscent() - g.getFontMetrics().getDescent()) / 2);
             }
@@ -356,10 +442,10 @@ public final class Theme {
         t.setRowHeight(42);
         t.setShowGrid(false);
         t.setIntercellSpacing(new Dimension(0, 0));
-        t.setSelectionBackground(new Color(0xEAE5FD));
+        t.setSelectionBackground(new Color(0x40336A));
         t.setSelectionForeground(TEXT);
         t.setFillsViewportHeight(true);
-        t.setBackground(Color.WHITE);
+        t.setBackground(new Color(0x17142A));
         JTableHeader h = t.getTableHeader();
         h.setReorderingAllowed(false);
         h.setPreferredSize(new Dimension(100, 40));
@@ -368,7 +454,7 @@ public final class Theme {
                 JLabel l = (JLabel) super.getTableCellRendererComponent(tb, v, false, false, r, c);
                 l.setFont(font(Font.BOLD, 12f));
                 l.setForeground(MUTED);
-                l.setBackground(new Color(0xF3F0FD));
+                l.setBackground(new Color(0x211C39));
                 l.setBorder(new EmptyBorder(0, 10, 0, 10));
                 TableCellRenderer cr = tb.getColumnModel().getColumn(c).getCellRenderer();
                 int align = cr instanceof PaddedRenderer pr ? pr.align : SwingConstants.LEFT;
@@ -381,7 +467,7 @@ public final class Theme {
     public static JScrollPane scroll(JComponent c) {
         JScrollPane sp = new JScrollPane(c);
         sp.setBorder(new LineBorder(BORDER, 1, true));
-        sp.getViewport().setBackground(Color.WHITE);
+        sp.getViewport().setBackground(BG);
         slimScroll(sp);
         return sp;
     }
@@ -395,7 +481,7 @@ public final class Theme {
     }
 
     private static class SlimScrollUI extends BasicScrollBarUI {
-        @Override protected void configureScrollBarColors() { thumbColor = new Color(0xC9C0F0); trackColor = new Color(0, 0, 0, 0); }
+        @Override protected void configureScrollBarColors() { thumbColor = new Color(0x65549B); trackColor = new Color(0, 0, 0, 0); }
         @Override protected JButton createDecreaseButton(int o) { return zero(); }
         @Override protected JButton createIncreaseButton(int o) { return zero(); }
         private JButton zero() { JButton b = new JButton(); b.setPreferredSize(new Dimension(0, 0)); return b; }
@@ -415,7 +501,7 @@ public final class Theme {
         public PaddedRenderer(int align) { this.align = align; }
         @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean s, boolean f, int r, int c) {
             JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, s, false, r, c);
-            l.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, new Color(0xF0EDFA)), new EmptyBorder(0, 10, 0, 10)));
+            l.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, BORDER), new EmptyBorder(0, 10, 0, 10)));
             l.setHorizontalAlignment(align);
             return l;
         }
@@ -425,8 +511,8 @@ public final class Theme {
     public static class PillRenderer extends DefaultTableCellRenderer {
         @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean f, int r, int c) {
             JPanel p = new JPanel(new GridBagLayout());
-            p.setBackground(sel ? t.getSelectionBackground() : Color.WHITE);
-            p.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, new Color(0xF0EDFA)), new EmptyBorder(0, 10, 0, 6)));
+            p.setBackground(sel ? t.getSelectionBackground() : new Color(0x17142A));
+            p.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, BORDER), new EmptyBorder(0, 10, 0, 6)));
             GridBagConstraints gc = new GridBagConstraints();
             gc.anchor = GridBagConstraints.WEST;
             gc.weightx = 1;

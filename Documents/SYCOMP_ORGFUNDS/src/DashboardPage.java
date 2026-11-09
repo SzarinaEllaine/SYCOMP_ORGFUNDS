@@ -50,7 +50,7 @@ public class DashboardPage extends Theme.ScrollPanel {
         JPanel ht = new JPanel();
         ht.setOpaque(false);
         ht.setLayout(new BoxLayout(ht, BoxLayout.Y_AXIS));
-        ht.add(Theme.label("Financial Overview", Font.BOLD, 22f, Theme.PURPLE_DARK));
+        ht.add(Theme.label("Financial Overview", Font.BOLD, 22f, Theme.PURPLE_LIGHT));
         ht.add(Box.createVerticalStrut(2));
         ht.add(overviewSub);
 
@@ -336,7 +336,7 @@ public class DashboardPage extends Theme.ScrollPanel {
 
         row.setOpaque(false);
         row.setBorder(new CompoundBorder(
-                new MatteBorder(0, 0, 1, 0, new Color(0xF0EDFA)),
+                new MatteBorder(0, 0, 1, 0, Theme.BORDER),
                 new EmptyBorder(6, 2, 6, 2)
         ));
 
@@ -358,7 +358,7 @@ public class DashboardPage extends Theme.ScrollPanel {
                 g.fill(new RoundRectangle2D.Float(0, 0, 46, 46, 12, 12));
 
                 g.setFont(Theme.font(Font.BOLD, 10.5f));
-                g.setColor(Theme.PURPLE_DARK);
+                g.setColor(Theme.PURPLE_LIGHT);
 
                 String m = t.getDate().getMonth()
                         .getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
@@ -420,7 +420,7 @@ public class DashboardPage extends Theme.ScrollPanel {
                         0.5f, 0.5f, getWidth() - 1, getHeight() - 1, 14, 14
                 );
 
-                g.setColor(new Color(0xFBFAFF));
+                g.setColor(new Color(0x211C39));
                 g.fill(s);
 
                 g.setColor(Theme.BORDER);
@@ -471,7 +471,7 @@ public class DashboardPage extends Theme.ScrollPanel {
 
         JPanel foot = new JPanel(new BorderLayout());
         foot.setOpaque(false);
-        foot.setBorder(new MatteBorder(1, 0, 0, 0, new Color(0xEDE9FA)));
+        foot.setBorder(new MatteBorder(1, 0, 0, 0, Theme.BORDER));
 
         JPanel when = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 8));
         when.setOpaque(false);
@@ -482,7 +482,7 @@ public class DashboardPage extends Theme.ScrollPanel {
         foot.add(when, BorderLayout.WEST);
 
         Theme.RoundButton view = new Theme.RoundButton(
-                "View Report", Theme.PURPLE_DARK, false
+                "View Report", Theme.PURPLE, false
         );
 
         view.setFont(Theme.font(Font.BOLD, 12f));
@@ -516,14 +516,14 @@ public class DashboardPage extends Theme.ScrollPanel {
         StatCard(String title, String icon) {
             super(new BorderLayout(14, 0));
 
-            tint(new Color(0xF3F0FF), new Color(0xFBFAFF));
+            tint(new Color(0x292244), new Color(0x19162D));
 
             if (icon.equals("wallet")) {
-                tint(new Color(0xFBF0FB), new Color(0xFFFAFF));
+                tint(new Color(0x302039), new Color(0x1B172F));
             }
 
             if (icon.equals("folder")) {
-                tint(new Color(0xEAF4FF), new Color(0xF8FBFF));
+                tint(new Color(0x1D2940), new Color(0x17142A));
             }
 
             setBorder(new EmptyBorder(16, 16, 18, 14));
@@ -577,6 +577,7 @@ public class DashboardPage extends Theme.ScrollPanel {
     private static class Segmented extends JComponent {
         private final String[] labels;
         private int sel = 0;
+        private final Theme.Anim hoverA = new Theme.Anim(this), slideA = new Theme.Anim(this);
 
         Segmented(String[] labels, IntConsumer cb) {
             this.labels = labels;
@@ -585,13 +586,15 @@ public class DashboardPage extends Theme.ScrollPanel {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             addMouseListener(new MouseAdapter() {
+                @Override public void mouseEntered(MouseEvent e) { hoverA.to(true); }
+                @Override public void mouseExited(MouseEvent e) { hoverA.to(false); }
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     int i = e.getX() < getWidth() / 2 ? 0 : 1;
 
                     if (i != sel) {
                         sel = i;
-                        repaint();
+                        slideA.to(i == 1);
                         cb.accept(i);
                     }
                 }
@@ -609,21 +612,19 @@ public class DashboardPage extends Theme.ScrollPanel {
             g.setColor(Theme.LAVENDER);
             g.fillRoundRect(0, 0, w, h, h, h);
 
+            float x = slideA.get() * (w / 2f);
+            Theme.glow(g, new RoundRectangle2D.Float(x + 3, 3, w / 2f - 6, h - 6, h, h), Theme.PURPLE_LIGHT, 0.35f + 0.5f * hoverA.get(), 2);
             g.setPaint(new GradientPaint(
                     0, 0, Theme.PURPLE,
                     w, 0, Theme.PURPLE_LIGHT
             ));
-
-            g.fillRoundRect(
-                    sel * w / 2 + 3, 3,
-                    w / 2 - 6, h - 6, h, h
-            );
+            g.fill(new RoundRectangle2D.Float(x + 3, 3, w / 2f - 6, h - 6, h, h));
 
             g.setFont(Theme.font(Font.BOLD, 12.5f));
             FontMetrics fm = g.getFontMetrics();
 
             for (int i = 0; i < 2; i++) {
-                g.setColor(i == sel ? Color.WHITE : Theme.PURPLE_DARK);
+                g.setColor(i == sel ? Color.WHITE : Theme.MUTED);
 
                 g.drawString(
                         labels[i],
@@ -709,7 +710,7 @@ public class DashboardPage extends Theme.ScrollPanel {
             for (int i = 0; i <= ticks; i++) {
                 double y = top + plotH - plotH * i / ticks;
 
-                g.setColor(new Color(0xECE8FA));
+                g.setColor(new Color(0x332D4D));
                 g.draw(new Line2D.Double(left, y, w - right, y));
 
                 g.setColor(Theme.MUTED);
@@ -774,7 +775,7 @@ public class DashboardPage extends Theme.ScrollPanel {
                 g.setColor(c);
                 g.fill(new RoundRectangle2D.Double(x, y, bw, bh + 4, 5, 5));
 
-                g.setColor(Color.WHITE);
+                g.setColor(new Color(0x17142A));
                 g.fill(new Rectangle2D.Double(
                         x - 1, top + plotH, bw + 2, 6
                 ));

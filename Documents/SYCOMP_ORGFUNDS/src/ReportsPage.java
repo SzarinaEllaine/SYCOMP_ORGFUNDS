@@ -72,7 +72,7 @@ public class ReportsPage extends Theme.ScrollPanel {
         t.setOpaque(false);
         t.setLayout(new BoxLayout(t, BoxLayout.Y_AXIS));
         t.add(Box.createVerticalGlue());
-        t.add(Theme.label("Reports", Font.BOLD, 28f, Theme.PURPLE_DARK));
+        t.add(Theme.label("Reports", Font.BOLD, 28f, Theme.PURPLE_LIGHT));
         t.add(Theme.label("View and download financial reports, activity reports, and organization records.", Font.PLAIN, 13.5f, Theme.MUTED));
         t.add(Box.createVerticalGlue());
         head.add(t, BorderLayout.CENTER);
@@ -121,7 +121,7 @@ public class ReportsPage extends Theme.ScrollPanel {
         JPanel tabs = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8)) {
             @Override protected void paintComponent(Graphics g0) {
                 Graphics2D g = (Graphics2D) g0.create();
-                g.setColor(new Color(0xF4F1FF));
+                g.setColor(new Color(0x211C39));
                 g.fill(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, 12, 12));
                 g.dispose();
             }
@@ -233,7 +233,7 @@ public class ReportsPage extends Theme.ScrollPanel {
     }
 
     private JPanel buildNote() {
-        Theme.Card c = new Theme.Card(new BorderLayout(12, 0)).tint(new Color(0xF4F1FF), new Color(0xFBFAFF));
+        Theme.Card c = new Theme.Card(new BorderLayout(12, 0)).tint(new Color(0x211C39), new Color(0x19162D));
         c.setBorder(new EmptyBorder(8, 18, 12, 18));
         c.add(new JLabel(Icons.of("info", 18, Theme.PURPLE)), BorderLayout.WEST);
         c.add(Theme.label("<html><b>Note:</b> Reports are generated from the recorded transactions of the selected school year and semester. For unavailable reports, please contact the administrator.</html>",
@@ -383,7 +383,7 @@ private List<ReportCatalog.Report> filtered() {
         for (ReportCatalog.Opened o : rec) {
             JPanel row = new JPanel(new BorderLayout(10, 0));
             row.setOpaque(false);
-            row.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, new Color(0xF0EDFA)), new EmptyBorder(6, 0, 6, 0)));
+            row.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, Theme.BORDER), new EmptyBorder(6, 0, 6, 0)));
             row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 54));
             JPanel t = new JPanel(new GridLayout(2, 1));
             t.setOpaque(false);
@@ -408,7 +408,7 @@ private List<ReportCatalog.Report> filtered() {
         JPanel h = new JPanel(new Theme.RowLayout(8, COLS)) {
             @Override protected void paintComponent(Graphics g0) {
                 Graphics2D g = (Graphics2D) g0.create();
-                g.setColor(new Color(0xF3F0FD));
+                g.setColor(new Color(0x211C39));
                 g.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 10, 10));
                 g.dispose();
             }
@@ -432,7 +432,7 @@ private List<ReportCatalog.Report> filtered() {
     private JComponent reportRow(ReportCatalog.Report r) {
         JPanel row = new JPanel(new Theme.RowLayout(8, COLS));
         row.setOpaque(false);
-        row.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, new Color(0xF0EDFA)), new EmptyBorder(0, 12, 0, 8)));
+        row.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, Theme.BORDER), new EmptyBorder(0, 12, 0, 8)));
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 56));
         row.setPreferredSize(new Dimension(100, 56));
 
@@ -523,15 +523,18 @@ private List<ReportCatalog.Report> filtered() {
     // -------------------------------------------------------------- components
     private static class Chip extends JComponent {
         private final String text, icon;
-        private boolean selected, hover;
+        private boolean selected;
+        private final Theme.Anim hoverA = new Theme.Anim(this), pressA = new Theme.Anim(this);
         Chip(String text, String icon, Runnable action) {
             this.text = text; this.icon = icon;
             setFont(Theme.font(Font.BOLD, 12.5f));
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             addMouseListener(new MouseAdapter() {
                 @Override public void mouseClicked(MouseEvent e) { action.run(); }
-                @Override public void mouseEntered(MouseEvent e) { hover = true; repaint(); }
-                @Override public void mouseExited(MouseEvent e) { hover = false; repaint(); }
+                @Override public void mouseEntered(MouseEvent e) { hoverA.to(true); }
+                @Override public void mouseExited(MouseEvent e) { hoverA.to(false); pressA.to(false); }
+                @Override public void mousePressed(MouseEvent e) { pressA.to(true); }
+                @Override public void mouseReleased(MouseEvent e) { pressA.to(false); }
             });
         }
         void setSelected(boolean s) { selected = s; repaint(); }
@@ -539,14 +542,18 @@ private List<ReportCatalog.Report> filtered() {
         @Override protected void paintComponent(Graphics g0) {
             Graphics2D g = (Graphics2D) g0.create();
             Theme.antialias(g);
+            float h = hoverA.get(), p = pressA.get();
+            RoundRectangle2D shape = new RoundRectangle2D.Float(3, 3, getWidth() - 7, getHeight() - 7, 14, 14);
             if (selected) {
-                g.setPaint(new GradientPaint(0, 0, Theme.PURPLE_DARK, getWidth(), 0, Theme.PURPLE));
-                g.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 14, 14));
-            } else if (hover) {
-                g.setColor(new Color(255, 255, 255, 200));
-                g.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 14, 14));
+                Theme.glow(g, shape, Theme.PURPLE_LIGHT, 0.7f + 0.3f * Math.max(h, p), 3);
+                g.setPaint(new GradientPaint(0, 0, Theme.PURPLE_DARK, getWidth(), 0, Theme.PURPLE_LIGHT));
+                g.fill(shape);
+            } else if (h > 0.01f) {
+                Theme.glow(g, shape, Theme.PURPLE_LIGHT, h * 0.35f + p * 0.5f, 3);
+                g.setColor(new Color(180, 160, 255, Math.round(22 + 35 * h)));
+                g.fill(shape);
             }
-            Color fg = selected ? Color.WHITE : Theme.PURPLE;
+            Color fg = selected ? Color.WHITE : Theme.mix(Theme.MUTED, Theme.TEXT, h);
             Icons.paint(g, icon, 14, (getHeight() - 18) / 2.0, 18, fg);
             g.setFont(getFont());
             g.setColor(fg);
@@ -559,23 +566,30 @@ private List<ReportCatalog.Report> filtered() {
     private static class PageBtn extends JComponent {
         private final String label;
         private final boolean selected, enabled;
+        private final Theme.Anim hoverA = new Theme.Anim(this);
         PageBtn(String label, boolean selected, boolean enabled, Runnable action) {
             this.label = label; this.selected = selected; this.enabled = enabled;
             setPreferredSize(new Dimension(32, 32));
             if (enabled) {
                 setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                addMouseListener(new MouseAdapter() { @Override public void mouseClicked(MouseEvent e) { action.run(); } });
+                addMouseListener(new MouseAdapter() {
+                    @Override public void mouseClicked(MouseEvent e) { action.run(); }
+                    @Override public void mouseEntered(MouseEvent e) { hoverA.to(true); }
+                    @Override public void mouseExited(MouseEvent e) { hoverA.to(false); }
+                });
             }
         }
         @Override protected void paintComponent(Graphics g0) {
             Graphics2D g = (Graphics2D) g0.create();
             Theme.antialias(g);
+            float h = hoverA.get();
             Shape s = new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1, getHeight() - 1, 8, 8);
-            g.setColor(selected ? Theme.PURPLE : Color.WHITE);
+            if (enabled) Theme.glow(g, (RectangularShape) s, Theme.PURPLE_LIGHT, selected ? 0.6f : h * 0.5f, 2);
+            g.setColor(selected ? Theme.PURPLE : Theme.mix(new Color(0x1B172F), Theme.LAVENDER, h));
             g.fill(s);
-            g.setColor(selected ? Theme.PURPLE : Theme.BORDER);
+            g.setColor(selected ? Theme.PURPLE : Theme.mix(Theme.BORDER, Theme.PURPLE_LIGHT, h));
             g.draw(s);
-            Color fg = selected ? Color.WHITE : enabled ? Theme.PURPLE_DARK : new Color(0xC4BFDD);
+            Color fg = selected ? Color.WHITE : enabled ? Theme.TEXT : Theme.MUTED;
             if (label.startsWith("chev")) Icons.paint(g, label, 9, 9, 14, fg);
             else {
                 g.setFont(Theme.font(Font.BOLD, 12f));

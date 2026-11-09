@@ -88,7 +88,7 @@ public class TransactionsPage extends Theme.ScrollPanel {
 
         ht.add(Box.createVerticalGlue());
         ht.add(Theme.label(
-            "Transactions", Font.BOLD, 28f, Theme.PURPLE_DARK
+            "Transactions", Font.BOLD, 28f, Theme.PURPLE_LIGHT
         ));
         ht.add(Theme.label(
             "Record, search, update and delete the organization's income and expenses.",
@@ -428,7 +428,7 @@ public class TransactionsPage extends Theme.ScrollPanel {
 
         idField.setText(t.getId());
         idField.setEditable(false);
-        idField.setBackground(new Color(0xF3F0FD));
+        idField.setBackground(new Color(0x211C39));
 
         dateField.setText(t.getDate().toString());
         descField.setText(t.getDescription());
@@ -447,7 +447,7 @@ public class TransactionsPage extends Theme.ScrollPanel {
         table.clearSelection();
 
         idField.setEditable(true);
-        idField.setBackground(Color.WHITE);
+        idField.setBackground(new Color(0x211C39));
         idField.setText(manager.nextSuggestedId());
 
         dateField.setText(LocalDate.now().toString());

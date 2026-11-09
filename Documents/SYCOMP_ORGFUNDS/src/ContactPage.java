@@ -97,7 +97,7 @@ public class ContactPage extends Theme.ScrollPanel {
                 Graphics2D g = (Graphics2D) g0.create();
                 Theme.antialias(g);
                 Shape s = new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1, getHeight() - 1, 12, 12);
-                g.setColor(new Color(0xFBFAFF));
+                g.setColor(new Color(0x211C39));
                 g.fill(s);
                 g.setColor(Theme.BORDER);
                 g.draw(s);
@@ -149,6 +149,8 @@ public class ContactPage extends Theme.ScrollPanel {
         messageArea.setWrapStyleWord(true);
         messageArea.setFont(Theme.font(Font.PLAIN, 13.5f));
         messageArea.setForeground(Theme.TEXT);
+        messageArea.setBackground(new Color(0x1A1730));
+        messageArea.setCaretColor(Theme.PURPLE_LIGHT);
         messageArea.setBorder(new EmptyBorder(8, 10, 8, 10));
         ((AbstractDocument) messageArea.getDocument()).setDocumentFilter(new DocumentFilter() {
             @Override public void replace(FilterBypass fb, int off, int len, String text, AttributeSet a) throws BadLocationException {
@@ -246,7 +248,7 @@ public class ContactPage extends Theme.ScrollPanel {
                 Graphics2D g = (Graphics2D) g0.create();
                 Theme.antialias(g);
                 Shape s = new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1, getHeight() - 1, 12, 12);
-                g.setColor(new Color(0xFBFAFF));
+                g.setColor(new Color(0x211C39));
                 g.fill(s);
                 g.setColor(Theme.BORDER);
                 g.draw(s);
@@ -258,7 +260,7 @@ public class ContactPage extends Theme.ScrollPanel {
         for (String[] h : OrgInfo.HOURS) {
             JPanel r = new JPanel(new BorderLayout());
             r.setOpaque(false);
-            r.setBorder(new CompoundBorder(new MatteBorder(0, 0, ++i < OrgInfo.HOURS.size() ? 1 : 0, 0, new Color(0xF0EDFA)), new EmptyBorder(0, 14, 0, 14)));
+            r.setBorder(new CompoundBorder(new MatteBorder(0, 0, ++i < OrgInfo.HOURS.size() ? 1 : 0, 0, Theme.BORDER), new EmptyBorder(0, 14, 0, 14)));
             r.add(Theme.label(h[0], i == 1 ? Font.BOLD : Font.PLAIN, 12.5f, Theme.TEXT), BorderLayout.WEST);
             r.add(Theme.label(h[1], Font.PLAIN, 12.5f, Theme.MUTED), BorderLayout.EAST);
             rows.add(r);
@@ -294,14 +296,31 @@ public class ContactPage extends Theme.ScrollPanel {
     }
 
     private JComponent social(String icon, String name, String url) {
+        final String label = icon.equals("fb") ? "Visit SYComP Official Facebook Page" : name;
         JComponent c = new JComponent() {
-            { setPreferredSize(new Dimension(36, 36)); setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); setToolTipText(name); }
+            private final Theme.Anim hoverA = new Theme.Anim(this);
+            {
+                setPreferredSize(new Dimension(40, 40)); setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); setToolTipText(label);
+                addMouseListener(new MouseAdapter() {
+                    @Override public void mouseEntered(MouseEvent e) { hoverA.to(true); }
+                    @Override public void mouseExited(MouseEvent e) { hoverA.to(false); }
+                });
+            }
+            @Override public javax.accessibility.AccessibleContext getAccessibleContext() {
+                if (accessibleContext == null) accessibleContext = new AccessibleJComponent() {
+                    @Override public String getAccessibleName() { return label; }
+                    @Override public javax.accessibility.AccessibleRole getAccessibleRole() { return javax.accessibility.AccessibleRole.PUSH_BUTTON; }
+                };
+                return accessibleContext;
+            }
             @Override protected void paintComponent(Graphics g0) {
                 Graphics2D g = (Graphics2D) g0.create();
                 Theme.antialias(g);
-                g.setPaint(new GradientPaint(0, 0, Theme.PURPLE_LIGHT, 36, 36, Theme.PURPLE_DARK));
-                g.fill(new Ellipse2D.Double(0, 0, 36, 36));
-                Icons.paint(g, icon, 9, 9, 18, Color.WHITE);
+                float h = hoverA.get();
+                double d = 34 + 4 * h, o = (40 - d) / 2;          // gentle grow on hover; whole 40px tile is the click target
+                g.setColor(Theme.mix(Theme.LAVENDER, Theme.PURPLE, h));
+                g.fill(new Ellipse2D.Double(o, o, d, d));
+                Icons.paint(g, icon, 11, 11, 18, Theme.mix(Theme.PURPLE, Color.WHITE, h));
                 g.dispose();
             }
         };
@@ -345,7 +364,7 @@ public class ContactPage extends Theme.ScrollPanel {
                     Graphics2D g = (Graphics2D) g0.create();
                     Theme.antialias(g);
                     Shape s = new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1, getHeight() - 1, 10, 10);
-                    g.setColor(new Color(0xFBFAFF));
+                    g.setColor(new Color(0x211C39));
                     g.fill(s);
                     g.setColor(Theme.BORDER);
                     g.draw(s);
@@ -446,7 +465,7 @@ public class ContactPage extends Theme.ScrollPanel {
                 Graphics2D g = (Graphics2D) g0.create();
                 Theme.antialias(g);
                 g.setFont(getFont());
-                g.setColor(new Color(0xA19DBA));
+                g.setColor(Theme.MUTED);
                 Insets in = getInsets();
                 g.drawString(hint, in.left, (getHeight() + g.getFontMetrics().getAscent() - g.getFontMetrics().getDescent()) / 2);
                 g.dispose();

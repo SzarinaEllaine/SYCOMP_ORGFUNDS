@@ -100,7 +100,7 @@ public class ReportDialog extends JDialog {
         kpis.setOpaque(false);
         kpis.setPreferredSize(new Dimension(100, 84));
         for (String[] k : c.kpis) {
-            Theme.Card card = new Theme.Card(new BorderLayout(0, 4)).tint(new Color(0xF4F1FF), new Color(0xFFFFFF));
+            Theme.Card card = new Theme.Card(new BorderLayout(0, 4)).tint(new Color(0x211C39), new Color(0x19162D));
             card.setBorder(new EmptyBorder(12, 16, 14, 12));
             card.add(Theme.label(k[0], Font.PLAIN, 12f, Theme.MUTED), BorderLayout.NORTH);
             card.add(Theme.label(k[1], Font.BOLD, 19f, Theme.TEXT), BorderLayout.CENTER);

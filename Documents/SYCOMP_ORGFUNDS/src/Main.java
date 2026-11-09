@@ -12,6 +12,17 @@ public class Main {
             try { UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName()); } catch (Exception ignored) {}
             UIManager.put("OptionPane.messageFont", Theme.font(Font.PLAIN, 14f));
             UIManager.put("OptionPane.buttonFont", Theme.font(Font.BOLD, 13f));
+            UIManager.put("Panel.background", Theme.BG);
+            UIManager.put("Label.foreground", Theme.TEXT);
+            UIManager.put("Menu.background", new java.awt.Color(0x18142C));
+            UIManager.put("Menu.foreground", Theme.TEXT);
+            UIManager.put("MenuItem.background", new java.awt.Color(0x18142C));
+            UIManager.put("MenuItem.foreground", Theme.TEXT);
+            UIManager.put("PopupMenu.background", new java.awt.Color(0x18142C));
+            UIManager.put("OptionPane.background", Theme.BG);
+            UIManager.put("OptionPane.messageForeground", Theme.TEXT);
+            UIManager.put("ToolTip.background", new java.awt.Color(0x211C39));
+            UIManager.put("ToolTip.foreground", Theme.TEXT);
             UIManager.put("ToolTip.font", Theme.font(Font.PLAIN, 12f));
 
             FinanceManager manager = new FinanceManager(new File("orgfunds_data.csv"));
