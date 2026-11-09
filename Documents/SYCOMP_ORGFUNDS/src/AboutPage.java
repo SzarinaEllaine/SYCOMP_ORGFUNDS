@@ -9,20 +9,14 @@ import java.util.List;
 /** Organization profile: mission, vision, board, statistics and past administrators. */
 public class AboutPage extends Theme.ScrollPanel {
     private final DashboardFrame shell;
-    private final JPanel adminCards = new JPanel(new Theme.RowLayout(12, 1, 1, 1, 1, 1));
+    private final JPanel adminCards = new JPanel();
     private final JComboBox<String> yearBox = new JComboBox<>();
-    private final ArrowBtn leftBtn, rightBtn;
-    private int offset = 0;
-    private int visible = 5;
-    private List<String[]> shownAdmins = new ArrayList<>();
+    private JScrollPane adminScroll;
 
     public AboutPage(DashboardFrame shell) {
         this.shell = shell;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(new EmptyBorder(16, 24, 24, 24));
-        leftBtn = new ArrowBtn("chevLeft", () -> { offset = Math.max(0, offset - 1); buildAdmins(); });
-        rightBtn = new ArrowBtn("chevRight", () -> { offset++; buildAdmins(); });
-
         add(Theme.fixedHeight(new Art.Banner("about", "About the Organization", "About " + OrgInfo.SHORT_NAME, OrgInfo.FULL_NAME,
                 OrgInfo.INTRO, "“Learn   •   Build   •   Lead”", null), 196));
         add(Box.createVerticalStrut(14));
@@ -32,7 +26,7 @@ public class AboutPage extends Theme.ScrollPanel {
         add(Box.createVerticalStrut(14));
         add(buildStatsCard());
         add(Box.createVerticalStrut(14));
-        add(Theme.fixedHeight(buildAdminCard(), 300));
+        add(Theme.fixedHeight(buildAdminCard(), 360));
         add(Box.createVerticalStrut(14));
         add(Theme.fixedHeight(buildCta(), 98));
     }
@@ -277,27 +271,22 @@ public class AboutPage extends Theme.ScrollPanel {
         for (String[] a : OrgInfo.PAST_ADMINS) yearBox.addItem(a[0]);
         Theme.styleCombo(yearBox);
         yearBox.setPreferredSize(new Dimension(190, 34));
-        yearBox.addActionListener(e -> { offset = 0; buildAdmins(); });
+        yearBox.addActionListener(e -> buildAdmins());
         JPanel yw = new JPanel(new GridBagLayout());
         yw.setOpaque(false);
         yw.add(yearBox);
         top.add(yw, BorderLayout.EAST);
         card.add(top, BorderLayout.NORTH);
 
-        JPanel mid = new JPanel(new BorderLayout(8, 0));
-        mid.setOpaque(false);
-        mid.add(centerWrap(leftBtn), BorderLayout.WEST);
         adminCards.setOpaque(false);
-        mid.add(adminCards, BorderLayout.CENTER);
-        mid.add(centerWrap(rightBtn), BorderLayout.EAST);
-        card.add(mid, BorderLayout.CENTER);
-
-        adminCards.addComponentListener(new ComponentAdapter() {
-            @Override public void componentResized(ComponentEvent e) {
-                int v = Math.max(2, Math.min(5, adminCards.getWidth() / 215));
-                if (v != visible) { visible = v; buildAdmins(); }
-            }
-        });
+        adminCards.setLayout(new BoxLayout(adminCards, BoxLayout.Y_AXIS));
+        adminScroll = Theme.scroll(adminCards);
+        adminScroll.setBorder(BorderFactory.createEmptyBorder());
+        adminScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        adminScroll.getViewport().setOpaque(false);
+        adminScroll.setOpaque(false);
+        adminScroll.getVerticalScrollBar().setUnitIncrement(28);
+        card.add(adminScroll, BorderLayout.CENTER);
         buildAdmins();
         return card;
     }
@@ -310,23 +299,19 @@ public class AboutPage extends Theme.ScrollPanel {
     }
 
     private void buildAdmins() {
-        shownAdmins = new ArrayList<>();
-        String sel = String.valueOf(yearBox.getSelectedItem());
-        for (String[] a : OrgInfo.PAST_ADMINS) if ("All School Years".equals(sel) || a[0].equals(sel)) shownAdmins.add(a);
-        offset = Math.max(0, Math.min(offset, Math.max(0, shownAdmins.size() - visible)));
         adminCards.removeAll();
-        double[] w = new double[visible];
-        java.util.Arrays.fill(w, 1);
-        adminCards.setLayout(new Theme.RowLayout(12, w));
-        for (int i = 0; i < visible; i++) {
-            int idx = offset + i;
-            if (idx < shownAdmins.size()) adminCards.add(adminCard(shownAdmins.get(idx)));
-            else { JPanel e = new JPanel(); e.setOpaque(false); adminCards.add(e); }
+        String sel = String.valueOf(yearBox.getSelectedItem());
+        for (String[] a : OrgInfo.PAST_ADMINS) {
+            if (!"All School Years".equals(sel) && !a[0].equals(sel)) continue;
+            JComponent board = adminCard(a);
+            board.setAlignmentX(Component.LEFT_ALIGNMENT);
+            board.setMaximumSize(new Dimension(Integer.MAX_VALUE, board.getPreferredSize().height));
+            adminCards.add(board);
+            adminCards.add(Box.createVerticalStrut(10));
         }
-        leftBtn.setEnabledState(offset > 0);
-        rightBtn.setEnabledState(offset + visible < shownAdmins.size());
         adminCards.revalidate();
         adminCards.repaint();
+        adminScroll.getVerticalScrollBar().setValue(0);
     }
 
     private JComponent adminCard(String[] a) {
@@ -352,21 +337,28 @@ public class AboutPage extends Theme.ScrollPanel {
         head.add(new JLabel(Icons.of("clock", 16, Theme.PURPLE)));
         head.add(Theme.label(a[0], Font.BOLD, 13f, Theme.TEXT));
         c.add(head, BorderLayout.NORTH);
-        JPanel rows = new JPanel(new GridLayout(5, 1));
+        JPanel rows = new JPanel(new GridLayout(OrgInfo.ROLES.length, 1, 0, 2));
         rows.setOpaque(false);
         rows.setBorder(new EmptyBorder(4, 12, 6, 10));
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < OrgInfo.ROLES.length; i++) {
             JPanel r = new JPanel(new BorderLayout(6, 0));
             r.setOpaque(false);
-            r.setBorder(new MatteBorder(0, 0, i < 4 ? 1 : 0, 0, Theme.BORDER));
-            r.add(Theme.label(OrgInfo.ROLES[i], Font.BOLD, 11.5f, Theme.TEXT), BorderLayout.WEST);
-            JLabel n = Theme.label(a[i + 1], Font.PLAIN, 11.5f, Theme.MUTED);
+            r.setPreferredSize(new Dimension(100, 28));
+            r.setBorder(new MatteBorder(0, 0, i < OrgInfo.ROLES.length - 1 ? 1 : 0, 0, Theme.BORDER));
+            r.add(Theme.label(adminRoleLabel(OrgInfo.ROLES[i]), Font.BOLD, 12f, Theme.TEXT), BorderLayout.WEST);
+            JLabel n = Theme.label(a[i + 1], Font.PLAIN, 12f, Theme.MUTED);
             n.setHorizontalAlignment(SwingConstants.RIGHT);
             r.add(n, BorderLayout.CENTER);
             rows.add(r);
         }
         c.add(rows, BorderLayout.CENTER);
         return c;
+    }
+
+    private static String adminRoleLabel(String role) {
+        if ("Public Information Officer".equals(role)) return "PIO";
+        if ("Assistant Public Information Officer".equals(role)) return "Assistant PIO";
+        return role.replace(" Representative", " Rep.");
     }
 
     // -------------------------------------------------------------------- CTA
@@ -410,7 +402,7 @@ public class AboutPage extends Theme.ScrollPanel {
         for (String[] m : OrgInfo.BOARD) sb.append("   ").append(m[0]).append(": ").append(m[1]).append('\n');
         for (String[] a : OrgInfo.PAST_ADMINS) {
             sb.append('\n').append(a[0]).append('\n');
-            for (int i = 0; i < 5; i++) sb.append("   ").append(OrgInfo.ROLES[i]).append(": ").append(a[i + 1]).append('\n');
+            for (int i = 0; i < OrgInfo.ROLES.length; i++) sb.append("   ").append(OrgInfo.ROLES[i]).append(": ").append(a[i + 1]).append('\n');
         }
         JTextArea ta = new JTextArea(sb.toString(), 22, 54);
         ta.setEditable(false);
@@ -419,35 +411,5 @@ public class AboutPage extends Theme.ScrollPanel {
         ta.setFont(Theme.font(Font.PLAIN, 13f));
         ta.setBorder(new EmptyBorder(8, 10, 8, 10));
         JOptionPane.showMessageDialog(this, Theme.scroll(ta), "Organization History", JOptionPane.PLAIN_MESSAGE);
-    }
-
-    private static class ArrowBtn extends JComponent {
-        private final String icon;
-        private boolean on = true;
-        private final Theme.Anim hoverA = new Theme.Anim(this);
-        ArrowBtn(String icon, Runnable action) {
-            this.icon = icon;
-            setPreferredSize(new Dimension(30, 30));
-            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            addMouseListener(new MouseAdapter() {
-                @Override public void mouseClicked(MouseEvent e) { if (on) action.run(); }
-                @Override public void mouseEntered(MouseEvent e) { hoverA.to(true); }
-                @Override public void mouseExited(MouseEvent e) { hoverA.to(false); }
-            });
-        }
-        void setEnabledState(boolean b) { on = b; repaint(); }
-        @Override protected void paintComponent(Graphics g0) {
-            Graphics2D g = (Graphics2D) g0.create();
-            Theme.antialias(g);
-            float h = on ? hoverA.get() : 0f;
-            RoundRectangle2D s = new RoundRectangle2D.Float(1.5f, 1.5f, getWidth() - 3, getHeight() - 3, 8, 8);
-            Theme.glow(g, s, Theme.PURPLE_LIGHT, h * 0.55f, 2);
-            g.setColor(Theme.mix(new Color(0x211C39), Theme.LAVENDER, h));
-            g.fill(s);
-            g.setColor(Theme.mix(Theme.BORDER, Theme.PURPLE_LIGHT, h));
-            g.draw(s);
-            Icons.paint(g, icon, 8, 8, 14, on ? Theme.PURPLE_LIGHT : Theme.MUTED);
-            g.dispose();
-        }
     }
 }

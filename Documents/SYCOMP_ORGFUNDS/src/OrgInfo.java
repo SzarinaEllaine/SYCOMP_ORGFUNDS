@@ -62,14 +62,21 @@ public final class OrgInfo {
             new String[]{"15+", "Events & Activities", "Per academic year"},
             new String[]{"4", "Core Committees", "Supporting the organization"});
 
-    /** school year followed by President, Vice President, Secretary, Treasurer, Auditor names */
+    /** School year followed by names in the order listed by ROLES. */
     public static final List<String[]> PAST_ADMINS = List.of(
-            new String[]{"2024 – 2025", "Jessa Marie Santos", "Daniel Cruz", "Kristine Flores", "Miguel Reyes", "Patricia Lim"},
-            new String[]{"2023 – 2024", "Lance Villanueva", "Angelica Ramos", "John Paolo Dela Cruz", "Samantha Lee", "Renz Santos"},
-            new String[]{"2022 – 2023", "Mark Anthony Reyes", "Francesca Gonzales", "Earl Mendoza", "Bea Garcia", "Kevin Tolentino"},
-            new String[]{"2021 – 2022", "Jasmine Cruz", "Pauline Santos", "Ivan Dela Torre", "Monica Flores", "Clarence Ramos"},
-            new String[]{"2020 – 2021", "Karlo Santos", "Alyssa Mendoza", "Rafael Cruz", "Liza Fernandez", "Neil Garcia"});
-    public static final String[] ROLES = {"President", "Vice President", "Secretary", "Treasurer", "Auditor"};
+            new String[]{"2025 – 2026", "Mia Therese Villanueva", "Gabriel Santos", "Ariana Dela Cruz", "Paolo Mendoza", "Cheska Lim", "Rafael Navarro", "Bianca Reyes", "Kyla Ramos", "Nathan Flores", "Sofia Castillo", "Ethan Garcia", "Lara Bautista", "Marco Aquino", "Janelle Mercado", "Luis Fernandez"},
+            new String[]{"2024 – 2025", "Jessa Marie Santos", "Daniel Cruz", "Kristine Flores", "Miguel Reyes", "Patricia Lim", "Rafael Dizon", "Camille Navarro", "Lara Villanueva", "Paolo Mendoza", "Trisha Garcia", "Enzo Ramos", "Mikaela Bautista", "Kurt Salcedo", "Bianca Torres", "Adrian Flores"},
+            new String[]{"2023 – 2024", "Lance Villanueva", "Angelica Ramos", "John Paolo Dela Cruz", "Samantha Lee", "Renz Santos", "Marco Villareal", "Janelle Aquino", "Joshua Lim", "Andrea Castillo", "Gabriel Pineda", "Chloe Manalo", "Nico Valdez", "Sofia Herrera", "Carlo Domingo", "Kyla Fernandez"},
+            new String[]{"2022 – 2023", "Mark Anthony Reyes", "Francesca Gonzales", "Earl Mendoza", "Bea Garcia", "Kevin Tolentino", "Diana Javier", "Patrick Flores", "Alyssa Rivera", "Sean Cabrera", "Maureen Lopez", "Rico Salazar", "Ivy Santiago", "Andrei Cruz", "Nicole Ramos", "Nathaniel Ong"},
+            new String[]{"2021 – 2022", "Jasmine Cruz", "Pauline Santos", "Ivan Dela Torre", "Monica Flores", "Clarence Ramos", "Angela Bautista", "Carlo Reyes", "Mara Villanueva", "Joaquin Garcia", "Leah Mendoza", "Francis Tan", "Trina Castillo", "Ethan Navarro", "Camille Dizon", "Gabrielle Lim"},
+            new String[]{"2020 – 2021", "Karlo Santos", "Alyssa Mendoza", "Rafael Cruz", "Liza Fernandez", "Neil Garcia", "Patricia Aquino", "Jerome Valdez", "Katrina Domingo", "Miguel Salcedo", "Aira Pineda", "Vincent Herrera", "Shaina Mercado", "Noel Castillo", "Beatrice Lopez", "Daryl Santiago"});
+    public static final String[] ROLES = {
+            "President", "Vice President", "Secretary", "Treasurer", "Auditor",
+            "Public Information Officer", "Assistant Public Information Officer",
+            "1st Year Representative", "1st Year Representative",
+            "2nd Year Representative", "2nd Year Representative",
+            "3rd Year Representative", "3rd Year Representative",
+            "4th Year Representative", "4th Year Representative"};
 
     public static final String EMAIL = "sycomp@e-svuc.edu.ph";
     public static final String PHONE = "+63 (42) 123 4567";

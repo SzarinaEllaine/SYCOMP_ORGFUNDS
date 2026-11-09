@@ -35,9 +35,8 @@ public final class Theme {
     public static final Color BLUE = new Color(0x78A9FF);
     public static final Color CYAN = new Color(0x22D3EE);
 
-    private static final String FAMILY = pickFamily(new String[]{"Inter", "Plus Jakarta Sans", "Segoe UI Variable Text", "Segoe UI", "SF Pro Text", "Helvetica Neue", "Noto Sans", "DejaVu Sans"});
-    /** Headings use Plus Jakarta Sans when available, otherwise the body family. */
-    private static final String HEADING_FAMILY = pickFamily(new String[]{"Plus Jakarta Sans", "Inter", "Segoe UI", "SF Pro Display", "Helvetica Neue", "Noto Sans", "DejaVu Sans"});
+    private static final String FAMILY = pickFamily(new String[]{"Inter"});
+    private static final String HEADING_FAMILY = FAMILY;
 
     /**
      * Drop Inter / Plus Jakarta Sans .ttf files in a "fonts" folder next to the app (or in src/fonts) and they
