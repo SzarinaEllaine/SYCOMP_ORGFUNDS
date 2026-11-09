@@ -36,14 +36,14 @@ public class DashboardPage extends Theme.ScrollPanel {
         this.catalog = catalog;
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(new EmptyBorder(16, 24, 24, 24));
+        setBorder(new EmptyBorder(20, 28, 28, 28));
 
         add(Theme.fixedHeight(new Art.Banner("dashboard", null, "Welcome, Student!", null,
                 "Stay informed and be part of a transparent and accountable organization. Explore our financial reports and see how your organization's funds are used.",
-                null, null), 150));
-        add(Box.createVerticalStrut(14));
+                null, null), 158));
+        add(Box.createVerticalStrut(18));
 
-        // overview header
+        // Financial overview header
         JPanel head = new JPanel(new BorderLayout());
         head.setOpaque(false);
 
@@ -53,7 +53,6 @@ public class DashboardPage extends Theme.ScrollPanel {
         ht.add(Theme.label("Financial Overview", Font.BOLD, 22f, Theme.PURPLE_LIGHT));
         ht.add(Box.createVerticalStrut(2));
         ht.add(overviewSub);
-
         head.add(ht, BorderLayout.WEST);
 
         Segmented seg = new Segmented(
@@ -69,15 +68,18 @@ public class DashboardPage extends Theme.ScrollPanel {
         segWrap.add(seg);
         head.add(segWrap, BorderLayout.EAST);
 
-        add(Theme.fixedHeight(head, 58));
-        add(Box.createVerticalStrut(8));
+        add(Theme.fixedHeight(head, 62));
+        add(Box.createVerticalStrut(10));
 
+        // Financial summary cards
         add(Theme.fixedHeight(
                 Theme.row(14, new double[]{1, 1, 1, 1},
-                        collections, expenses, balance, activities), 126));
-        add(Box.createVerticalStrut(14));
+                        collections, expenses, balance, activities),
+                136
+        ));
+        add(Box.createVerticalStrut(18));
 
-        // chart + recent activities
+        // Chart card
         Theme.Card chartCard = new Theme.Card(new BorderLayout(0, 4));
 
         JPanel ct = new JPanel();
@@ -95,12 +97,20 @@ public class DashboardPage extends Theme.ScrollPanel {
         chartCard.add(chartHead, BorderLayout.NORTH);
         chartCard.add(chart, BorderLayout.CENTER);
 
+        // Recent activities card
         Theme.Card recentCard = new Theme.Card(new BorderLayout(0, 6));
 
         JPanel rh = new JPanel(new BorderLayout());
         rh.setOpaque(false);
-        rh.add(Theme.cardTitle("calendar", "Recent Activities", null), BorderLayout.WEST);
-        rh.add(Theme.link("View All", () -> shell.showPage(DashboardFrame.TRANSACTIONS)), BorderLayout.EAST);
+        rh.add(
+                Theme.cardTitle("calendar", "Recent Activities", null),
+                BorderLayout.WEST
+        );
+        rh.add(
+                Theme.link("View All",
+                        () -> shell.showPage(DashboardFrame.TRANSACTIONS)),
+                BorderLayout.EAST
+        );
 
         recentCard.add(rh, BorderLayout.NORTH);
 
@@ -109,20 +119,30 @@ public class DashboardPage extends Theme.ScrollPanel {
         recentCard.add(recent, BorderLayout.CENTER);
 
         add(Theme.fixedHeight(
-                Theme.row(14, new double[]{1.55, 1}, chartCard, recentCard), 318));
-        add(Box.createVerticalStrut(14));
+                Theme.row(14, new double[]{1.55, 1},
+                        chartCard, recentCard),
+                334
+        ));
+        add(Box.createVerticalStrut(18));
 
-        // latest reports
+        // Latest published reports
         Theme.Card reportsCard = new Theme.Card(new BorderLayout(0, 10));
 
         JPanel rp = new JPanel(new BorderLayout());
         rp.setOpaque(false);
-        rp.add(Theme.cardTitle("doc", "Latest Published Reports",
-                "View the most recently published financial reports."), BorderLayout.WEST);
+
+        rp.add(
+                Theme.cardTitle("doc", "Latest Published Reports",
+                        "View the most recently published financial reports."),
+                BorderLayout.WEST
+        );
 
         JPanel all = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 8));
         all.setOpaque(false);
-        all.add(Theme.link("View All Reports", () -> shell.showPage(DashboardFrame.REPORTS)));
+        all.add(Theme.link(
+                "View All Reports",
+                () -> shell.showPage(DashboardFrame.REPORTS)
+        ));
         all.add(new JLabel(Icons.of("arrowRight", 14, Theme.PURPLE)));
 
         rp.add(all, BorderLayout.EAST);
@@ -131,7 +151,7 @@ public class DashboardPage extends Theme.ScrollPanel {
         reportRow.setOpaque(false);
         reportsCard.add(reportRow, BorderLayout.CENTER);
 
-        add(Theme.fixedHeight(reportsCard, 214));
+        add(Theme.fixedHeight(reportsCard, 224));
 
         manager.addChangeListener(this::refresh);
         refresh();
@@ -173,16 +193,19 @@ public class DashboardPage extends Theme.ScrollPanel {
     public void refresh() {
         SchoolPeriod cur = SchoolPeriod.current();
 
-        // Use the selected period for the dashboard calculations.
         List<FinancialTransaction> list =
-                semesterMode ? manager.inPeriod(cur) : manager.getTransactions();
+                semesterMode
+                        ? manager.inPeriod(cur)
+                        : manager.getTransactions();
 
         BigDecimal inc = FinanceManager.incomeOf(list);
         BigDecimal exp = FinanceManager.expensesOf(list);
         BigDecimal bal = inc.subtract(exp);
 
         overviewSub.setText(semesterMode
-                ? "A quick look at the organization's financial status for the current semester (" + cur.semesterLabel() + ", SY " + cur.schoolYearLabel() + ")."
+                ? "A quick look at the organization's financial status for the current semester ("
+                        + cur.semesterLabel() + ", SY "
+                        + cur.schoolYearLabel() + ")."
                 : "A quick look at the organization's financial status across all recorded transactions.");
 
         chartSub.setText(semesterMode
@@ -192,8 +215,11 @@ public class DashboardPage extends Theme.ScrollPanel {
         List<FinancialTransaction> prev =
                 semesterMode ? manager.inPeriod(cur.previousRegular()) : null;
 
-        BigDecimal pInc = prev == null ? null : FinanceManager.incomeOf(prev);
-        BigDecimal pExp = prev == null ? null : FinanceManager.expensesOf(prev);
+        BigDecimal pInc =
+                prev == null ? null : FinanceManager.incomeOf(prev);
+
+        BigDecimal pExp =
+                prev == null ? null : FinanceManager.expensesOf(prev);
 
         collections.set(
                 Theme.peso(inc),
@@ -209,11 +235,17 @@ public class DashboardPage extends Theme.ScrollPanel {
 
         balance.set(
                 Theme.peso(bal),
-                delta(bal, pInc == null ? null : pInc.subtract(pExp), true),
+                delta(
+                        bal,
+                        pInc == null ? null : pInc.subtract(pExp),
+                        true
+                ),
                 semesterMode ? "vs. last semester" : "income − expenses"
         );
 
-        balance.valueColor(bal.signum() < 0 ? Theme.RED : Theme.TEXT);
+        balance.valueColor(
+                bal.signum() < 0 ? Theme.RED : Theme.TEXT
+        );
 
         activities.set(
                 String.valueOf(list.size()),
@@ -221,7 +253,7 @@ public class DashboardPage extends Theme.ScrollPanel {
                 semesterMode ? "for this semester" : "recorded so far"
         );
 
-        // chart
+        // Monthly chart
         List<YearMonth> months = new ArrayList<>();
 
         if (semesterMode) {
@@ -252,19 +284,24 @@ public class DashboardPage extends Theme.ScrollPanel {
                 }
             }
 
-            labels.add(ym.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH));
+            labels.add(
+                    ym.getMonth().getDisplayName(
+                            TextStyle.SHORT,
+                            Locale.ENGLISH
+                    )
+            );
+
             ci.add(a);
             ce.add(b);
         }
 
         chart.set(labels, ci, ce);
 
-        // recent activity
+        // Recent activities
         recent.removeAll();
 
-        // IMPROVEMENT:
-        // Display recent transactions based on the selected dashboard period.
-        List<FinancialTransaction> latest = manager.newestFirst(list);
+        List<FinancialTransaction> latest =
+                manager.newestFirst(manager.getTransactions());
 
         if (latest.isEmpty()) {
             JLabel e = Theme.label(
@@ -280,7 +317,7 @@ public class DashboardPage extends Theme.ScrollPanel {
             recent.add(activityRow(latest.get(i)));
         }
 
-        // report cards
+        // Latest published reports
         reportRow.removeAll();
 
         List<ReportCatalog.Report> pub = new ArrayList<>();
@@ -298,7 +335,9 @@ public class DashboardPage extends Theme.ScrollPanel {
         };
 
         for (int i = 0; i < pub.size(); i++) {
-            reportRow.add(reportCard(pub.get(i), cur, tones[i % 3]));
+            reportRow.add(
+                    reportCard(pub.get(i), cur, tones[i % 3])
+            );
         }
 
         for (int i = pub.size(); i < 3; i++) {
@@ -311,7 +350,11 @@ public class DashboardPage extends Theme.ScrollPanel {
         repaint();
     }
 
-    private static Delta delta(BigDecimal cur, BigDecimal prev, boolean upIsGood) {
+    private static Delta delta(
+            BigDecimal cur,
+            BigDecimal prev,
+            boolean upIsGood
+    ) {
         if (prev == null || prev.signum() == 0) {
             return null;
         }
@@ -355,7 +398,9 @@ public class DashboardPage extends Theme.ScrollPanel {
                 Theme.antialias(g);
 
                 g.setColor(Theme.LAVENDER);
-                g.fill(new RoundRectangle2D.Float(0, 0, 46, 46, 12, 12));
+                g.fill(new RoundRectangle2D.Float(
+                        0, 0, 46, 46, 12, 12
+                ));
 
                 g.setFont(Theme.font(Font.BOLD, 10.5f));
                 g.setColor(Theme.PURPLE_LIGHT);
@@ -364,14 +409,25 @@ public class DashboardPage extends Theme.ScrollPanel {
                         .getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
                         .toUpperCase();
 
-                g.drawString(m, 23 - g.getFontMetrics().stringWidth(m) / 2, 17);
+                g.drawString(
+                        m,
+                        23 - g.getFontMetrics().stringWidth(m) / 2,
+                        17
+                );
 
                 g.setFont(Theme.font(Font.BOLD, 17f));
                 g.setColor(Theme.TEXT);
 
-                String d = String.format("%02d", t.getDate().getDayOfMonth());
+                String d = String.format(
+                        "%02d",
+                        t.getDate().getDayOfMonth()
+                );
 
-                g.drawString(d, 23 - g.getFontMetrics().stringWidth(d) / 2, 36);
+                g.drawString(
+                        d,
+                        23 - g.getFontMetrics().stringWidth(d) / 2,
+                        36
+                );
 
                 g.dispose();
             }
@@ -380,7 +436,10 @@ public class DashboardPage extends Theme.ScrollPanel {
         JPanel text = new JPanel(new GridLayout(2, 1, 0, 1));
         text.setOpaque(false);
 
-        text.add(Theme.label(t.getDescription(), Font.BOLD, 13.5f, Theme.TEXT));
+        text.add(Theme.label(
+                t.getDescription(),
+                Font.BOLD, 13.5f, Theme.TEXT
+        ));
 
         text.add(Theme.label(
                 t.getCategory() + "  •  "
@@ -389,9 +448,11 @@ public class DashboardPage extends Theme.ScrollPanel {
                 Font.PLAIN, 12f, Theme.MUTED
         ));
 
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 11));
-        right.setOpaque(false);
+        JPanel right = new JPanel(
+                new FlowLayout(FlowLayout.RIGHT, 8, 11)
+        );
 
+        right.setOpaque(false);
         right.add(new Theme.Pill(t.getType()));
         right.add(new JLabel(Icons.of("chevRight", 14, Theme.MUTED)));
 
@@ -409,7 +470,11 @@ public class DashboardPage extends Theme.ScrollPanel {
         return row;
     }
 
-    private JComponent reportCard(ReportCatalog.Report r, SchoolPeriod p, Color[] tone) {
+    private JComponent reportCard(
+            ReportCatalog.Report r,
+            SchoolPeriod p,
+            Color[] tone
+    ) {
         JPanel c = new JPanel(new BorderLayout(14, 0)) {
             @Override
             protected void paintComponent(Graphics g0) {
@@ -417,7 +482,10 @@ public class DashboardPage extends Theme.ScrollPanel {
                 Theme.antialias(g);
 
                 Shape s = new RoundRectangle2D.Float(
-                        0.5f, 0.5f, getWidth() - 1, getHeight() - 1, 14, 14
+                        0.5f, 0.5f,
+                        getWidth() - 1,
+                        getHeight() - 1,
+                        14, 14
                 );
 
                 g.setColor(new Color(0x211C39));
@@ -451,7 +519,9 @@ public class DashboardPage extends Theme.ScrollPanel {
         texts.setLayout(new BoxLayout(texts, BoxLayout.Y_AXIS));
 
         texts.add(Theme.label(
-                r.title.length() > 34 ? r.title.substring(0, 32) + "…" : r.title,
+                r.title.length() > 34
+                        ? r.title.substring(0, 32) + "…"
+                        : r.title,
                 Font.BOLD, 14f, Theme.TEXT
         ));
 
@@ -473,11 +543,16 @@ public class DashboardPage extends Theme.ScrollPanel {
         foot.setOpaque(false);
         foot.setBorder(new MatteBorder(1, 0, 0, 0, Theme.BORDER));
 
-        JPanel when = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 8));
-        when.setOpaque(false);
+        JPanel when = new JPanel(
+                new FlowLayout(FlowLayout.LEFT, 6, 8)
+        );
 
+        when.setOpaque(false);
         when.add(new JLabel(Icons.of("calendar", 14, Theme.MUTED)));
-        when.add(Theme.label(p.coveredLabel(), Font.PLAIN, 11.5f, Theme.MUTED));
+        when.add(Theme.label(
+                p.coveredLabel(),
+                Font.PLAIN, 11.5f, Theme.MUTED
+        ));
 
         foot.add(when, BorderLayout.WEST);
 
@@ -495,7 +570,10 @@ public class DashboardPage extends Theme.ScrollPanel {
                 )
         );
 
-        JPanel vb = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 4));
+        JPanel vb = new JPanel(
+                new FlowLayout(FlowLayout.RIGHT, 0, 4)
+        );
+
         vb.setOpaque(false);
         vb.add(view);
 
@@ -509,12 +587,16 @@ public class DashboardPage extends Theme.ScrollPanel {
 
     // -------------------------------------------------------------- components
     private static class StatCard extends Theme.Card {
-        private final JLabel value = Theme.label("-", Font.BOLD, 25f, Theme.TEXT);
+        private final JLabel value =
+                Theme.label("-", Font.BOLD, 23f, Theme.TEXT);
+
         private final JLabel deltaLabel = new JLabel(" ");
-        private final JLabel sub = Theme.label(" ", Font.PLAIN, 12f, Theme.MUTED);
+
+        private final JLabel sub =
+                Theme.label(" ", Font.PLAIN, 12f, Theme.MUTED);
 
         StatCard(String title, String icon) {
-            super(new BorderLayout(14, 0));
+            super(new BorderLayout(12, 0));
 
             tint(new Color(0x292244), new Color(0x19162D));
 
@@ -526,17 +608,20 @@ public class DashboardPage extends Theme.ScrollPanel {
                 tint(new Color(0x1D2940), new Color(0x17142A));
             }
 
-            setBorder(new EmptyBorder(16, 16, 18, 14));
+            setBorder(new EmptyBorder(18, 18, 18, 16));
 
             JPanel iw = new JPanel(new BorderLayout());
             iw.setOpaque(false);
-            iw.add(Theme.iconCircle(icon, 52), BorderLayout.NORTH);
+            iw.add(Theme.iconCircle(icon, 48), BorderLayout.NORTH);
 
             JPanel col = new JPanel();
             col.setOpaque(false);
             col.setLayout(new BoxLayout(col, BoxLayout.Y_AXIS));
 
-            col.add(Theme.label(title, Font.BOLD, 13.5f, Theme.TEXT));
+            col.add(Theme.label(
+                    title, Font.BOLD, 13f, Theme.MUTED
+            ));
+
             col.add(Box.createVerticalStrut(2));
             col.add(value);
             col.add(Box.createVerticalStrut(1));
@@ -560,8 +645,10 @@ public class DashboardPage extends Theme.ScrollPanel {
 
                 deltaLabel.setText(" " + d.text());
                 deltaLabel.setForeground(c);
+
                 deltaLabel.setIcon(Icons.of(
-                        d.up() ? "arrowUp" : "arrowDown", 12, c
+                        d.up() ? "arrowUp" : "arrowDown",
+                        12, c
                 ));
             }
 
@@ -628,7 +715,8 @@ public class DashboardPage extends Theme.ScrollPanel {
 
                 g.drawString(
                         labels[i],
-                        i * w / 2 + (w / 2 - fm.stringWidth(labels[i])) / 2,
+                        i * w / 2
+                                + (w / 2 - fm.stringWidth(labels[i])) / 2,
                         (h + fm.getAscent() - fm.getDescent()) / 2
                 );
             }
@@ -653,7 +741,11 @@ public class DashboardPage extends Theme.ScrollPanel {
             setToolTipText("");
         }
 
-        void set(List<String> l, List<BigDecimal> i, List<BigDecimal> e) {
+        void set(
+                List<String> l,
+                List<BigDecimal> i,
+                List<BigDecimal> e
+        ) {
             labels = l;
             inc = i;
             exp = e;
@@ -701,8 +793,8 @@ public class DashboardPage extends Theme.ScrollPanel {
             int ticks = Math.max(1, (int) Math.ceil(max / step));
             double top$ = step * ticks;
 
-            double plotH = h - top - bottom;
-            double plotW = w - left - right;
+            double plotH = Math.max(1, h - top - bottom);
+            double plotW = Math.max(1, w - left - right);
 
             g.setFont(Theme.font(Font.PLAIN, 11.5f));
             FontMetrics fm = g.getFontMetrics();
@@ -715,7 +807,9 @@ public class DashboardPage extends Theme.ScrollPanel {
 
                 g.setColor(Theme.MUTED);
 
-                String s = Theme.pesoShort(BigDecimal.valueOf(step * i));
+                String s = Theme.pesoShort(
+                        BigDecimal.valueOf(step * i)
+                );
 
                 g.drawString(
                         s,
@@ -735,14 +829,16 @@ public class DashboardPage extends Theme.ScrollPanel {
                         g, gx - barW - 2, barW,
                         inc.get(i).doubleValue(),
                         top$, top, plotH, C_INC,
-                        labels.get(i) + " – Collections: " + Theme.peso(inc.get(i))
+                        labels.get(i) + " – Collections: "
+                                + Theme.peso(inc.get(i))
                 );
 
                 drawBar(
                         g, gx + 2, barW,
                         exp.get(i).doubleValue(),
                         top$, top, plotH, C_EXP,
-                        labels.get(i) + " – Expenses: " + Theme.peso(exp.get(i))
+                        labels.get(i) + " – Expenses: "
+                                + Theme.peso(exp.get(i))
                 );
 
                 g.setColor(Theme.MUTED);
@@ -773,7 +869,10 @@ public class DashboardPage extends Theme.ScrollPanel {
 
             if (bh > 0) {
                 g.setColor(c);
-                g.fill(new RoundRectangle2D.Double(x, y, bw, bh + 4, 5, 5));
+
+                g.fill(new RoundRectangle2D.Double(
+                        x, y, bw, bh + 4, 5, 5
+                ));
 
                 g.setColor(new Color(0x17142A));
                 g.fill(new Rectangle2D.Double(
@@ -781,7 +880,10 @@ public class DashboardPage extends Theme.ScrollPanel {
                 ));
             }
 
-            hitBoxes.add(new Rectangle2D.Double(x, top, bw, plotH));
+            hitBoxes.add(new Rectangle2D.Double(
+                    x, top, bw, plotH
+            ));
+
             hitText.add(tip);
         }
 
@@ -793,7 +895,10 @@ public class DashboardPage extends Theme.ScrollPanel {
             double e = Math.pow(10, Math.floor(Math.log10(x)));
             double f = x / e;
 
-            double nf = f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10;
+            double nf = f <= 1 ? 1
+                    : f <= 2 ? 2
+                    : f <= 5 ? 5
+                    : 10;
 
             return nf * e;
         }
