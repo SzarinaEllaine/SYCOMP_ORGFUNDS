@@ -1,11 +1,12 @@
-import javax.swing.*;
-import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import javax.swing.*;
+import javax.swing.border.*;
 
 /** Report library: filters, statistics, paginated report table, previous-report access. */
 public class ReportsPage extends Theme.ScrollPanel {
@@ -316,15 +317,36 @@ public class ReportsPage extends Theme.ScrollPanel {
     }
 
     // ----------------------------------------------------------------- rebuild
-    private List<ReportCatalog.Report> filtered() {
-        List<ReportCatalog.Report> out = new ArrayList<>();
-        for (ReportCatalog.Report r : catalog.all()) {
-            if (!"All Types".equals(typeFilter) && !r.type.equals(typeFilter)) continue;
-            if (!searchText.isEmpty() && !(r.title + " " + r.type + " " + r.id).toLowerCase().contains(searchText.toLowerCase())) continue;
-            out.add(r);
+   
+private List<ReportCatalog.Report> filtered() {
+    List<ReportCatalog.Report> out = new ArrayList<>();
+
+    String keyword = searchText.trim().toLowerCase(Locale.ROOT);
+
+    for (ReportCatalog.Report r : catalog.all()) {
+
+        if (!"All Types".equals(typeFilter)
+                && !r.type.equals(typeFilter)) {
+            continue;
         }
-        return out;
+
+        String searchableText =
+                r.title + " "
+                + r.type + " "
+                + r.id + " "
+                + r.description;
+
+        if (!searchableText.toLowerCase(Locale.ROOT)
+                .contains(keyword)) {
+            continue;
+        }
+
+        out.add(r);
     }
+
+    return out;
+}
+
 
     private void rebuild() {
         // stats
