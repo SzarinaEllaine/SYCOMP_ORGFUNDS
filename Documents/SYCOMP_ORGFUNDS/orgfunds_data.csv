@@ -15,3 +15,5 @@ id,date,description,category,type,amount
 "TX-014",2026-10-18,"Sponsorship from a local IT firm","Donations",Income,8000.00
 "TX-015",2026-10-26,"General assembly refreshments","Meetings",Expense,2400.00
 "TX-016",2026-11-01,"Domain and hosting renewal","Projects",Expense,1800.00
+"TX-017",2026-11-09,"Codey's Chillcade","Events",Income,6000.00
+"TX-018",2026-11-09,"Peer-to-peer Snacks","Supplies",Expense,500.00
