@@ -17,3 +17,5 @@ id,date,description,category,type,amount
 "TX-016",2026-11-01,"Domain and hosting renewal","Projects",Expense,1800.00
 "TX-017",2026-11-09,"Codey's Chillcade","Events",Income,6000.00
 "TX-018",2026-11-09,"Peer-to-peer Snacks","Supplies",Expense,500.00
+"TX-019",2026-12-10,"Mid-year Evaluation","Events",Expense,5500.00
+"TX-020",2026-11-09,"SYCOMP DEP SHIRT","Fundraising",Income,5000.00
