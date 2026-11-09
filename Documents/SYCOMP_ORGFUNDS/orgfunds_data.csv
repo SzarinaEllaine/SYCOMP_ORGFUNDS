@@ -1,0 +1,17 @@
+id,date,description,category,type,amount
+"TX-001",2026-01-06,"Membership fees (2nd semester)","Membership Fees",Income,12000.00
+"TX-002",2026-01-21,"Hackathon prizes","Events",Expense,6000.00
+"TX-003",2026-02-15,"Booth sales","Fundraising",Income,7500.00
+"TX-004",2026-03-02,"Tech workshop supplies","Supplies",Expense,2100.00
+"TX-005",2026-08-04,"Membership fees (1st semester)","Membership Fees",Income,18750.00
+"TX-006",2026-08-09,"Orientation snacks and materials","Events",Expense,3200.00
+"TX-007",2026-08-19,"Tech Talk registration fees","Fundraising",Income,6400.00
+"TX-008",2026-08-25,"Poster printing","Supplies",Expense,850.00
+"TX-009",2026-09-03,"Alumni donation","Donations",Income,5000.00
+"TX-010",2026-09-11,"Coding Bootcamp venue and food","Events",Expense,7800.00
+"TX-011",2026-09-22,"Hoodie sales proceeds","Fundraising",Income,14500.00
+"TX-012",2026-09-30,"Hoodie production cost","Projects",Expense,9800.00
+"TX-013",2026-10-10,"Foundation week booth","Events",Expense,4200.00
+"TX-014",2026-10-18,"Sponsorship from a local IT firm","Donations",Income,8000.00
+"TX-015",2026-10-26,"General assembly refreshments","Meetings",Expense,2400.00
+"TX-016",2026-11-01,"Domain and hosting renewal","Projects",Expense,1800.00
